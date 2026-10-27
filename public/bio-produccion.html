@@ -1,0 +1,1899 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>MBCBIO · Sistema de Producción</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700;800&family=JetBrains+Mono:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --bg:#f5f7f2;--bg2:#fff;--bg3:#f0f4ec;--bg4:#e8f5ed;
+  --brd:#dde8d8;--brd2:#c2d4bb;
+  --tx:#1a2012;--txm:#3d5230;--txl:#7a9468;
+  --grn:#4b782d;--grnp:rgba(75,120,45,.08);--grnm:rgba(75,120,45,.16);
+  --gold:#b8860b;--goldp:rgba(184,134,11,.08);
+  --blue:#2b6cb0;--bluep:rgba(43,108,176,.08);
+  --red:#d22d00;--redp:rgba(210,45,0,.08);
+  --orange:#f59e0b;--orangep:rgba(245,158,11,.1);
+  --fm:'Barlow',sans-serif;--fc:'Barlow Condensed',sans-serif;--fmo:'DM Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--fm);background:var(--bg);color:var(--tx);min-height:100vh;-webkit-font-smoothing:antialiased}
+.screen{display:none;min-height:100vh;flex-direction:column}.screen.active{display:flex}
+label{display:block;font-size:.67rem;font-weight:700;color:var(--txm);letter-spacing:.7px;text-transform:uppercase;margin:.6rem 0 .18rem}
+input,select,textarea{width:100%;background:var(--bg3);border:1.5px solid var(--brd);border-radius:8px;color:var(--tx);font-family:var(--fm);font-size:.87rem;padding:.5rem .72rem;outline:none;-webkit-appearance:none;transition:border-color .18s}
+input:focus,select:focus,textarea:focus{border-color:var(--grn)}
+select option{background:var(--bg3)}
+textarea{resize:vertical;min-height:58px}
+input[type=number]{-moz-appearance:textfield}
+input[readonly]{opacity:.7}
+.btn{display:block;width:100%;padding:.63rem;border:none;border-radius:8px;font-family:var(--fc);font-size:.93rem;font-weight:700;cursor:pointer;text-align:center;transition:all .18s;letter-spacing:.4px;text-transform:uppercase}
+.btn-grn{background:var(--grn);color:#fff}.btn-grn:hover{background:#3de880}
+.btn-ghost{background:transparent;color:var(--txm);border:1.5px solid var(--brd);margin-top:.4rem}.btn-ghost:hover{border-color:var(--brd2);color:var(--tx)}
+.bsm{padding:.28rem .62rem;font-size:.7rem;border-radius:6px;font-family:var(--fc);font-weight:700;cursor:pointer;border:1.5px solid;transition:all .15s;background:transparent;white-space:nowrap;letter-spacing:.3px;text-transform:uppercase}
+.bsg{border-color:var(--grn);color:var(--grn)}.bsg:hover{background:var(--grn);color:#fff}
+.bsr{border-color:var(--red);color:var(--red)}.bsr:hover{background:var(--red);color:#fff}
+.bso{border-color:var(--gold);color:var(--gold)}.bso:hover{background:var(--gold);color:#fff}
+.bsb{border-color:var(--blue);color:var(--blue)}.bsb:hover{background:var(--blue);color:#fff}
+.bsn{border-color:var(--orange);color:var(--orange)}.bsn:hover{background:var(--orange);color:#fff}
+.bsave{background:var(--grn);color:#fff;border:none;border-radius:8px;padding:.58rem 1.1rem;font-family:var(--fc);font-weight:700;font-size:.87rem;cursor:pointer;margin-top:.8rem;letter-spacing:.4px;text-transform:uppercase;display:inline-block}
+.bsave:hover{background:#3de880}
+.bsave-full{width:100%;display:block;text-align:center}
+.fr{display:flex;gap:.48rem}.fr>div{flex:1}
+.sec{background:var(--bg2);border:1.5px solid var(--brd);border-radius:12px;padding:.85rem;margin-bottom:.62rem}
+.sttl{font-family:var(--fc);font-size:.68rem;font-weight:800;color:var(--grn);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:.7rem;display:flex;align-items:center;gap:.35rem}
+.sttl::before{content:'';width:3px;height:10px;background:var(--grn);border-radius:2px;display:block;flex-shrink:0}
+.hidden{display:none!important}
+/* splash */
+#screen-splash,#screen-setup{background:var(--bg);align-items:center;justify-content:center;padding:1.5rem;position:relative;overflow:hidden}
+#screen-splash::before{content:'';position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(46,204,113,.05) 0%,transparent 65%);top:-250px;left:-150px;pointer-events:none}
+.lcard{background:var(--bg2);border:1.5px solid var(--brd);border-radius:16px;padding:1.5rem;box-shadow:0 4px 20px rgba(75,120,45,.12);position:relative;overflow:hidden;width:100%;max-width:360px}
+.lcard::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--grn),var(--gold))}
+/* header */
+.hdr{background:var(--bg2);border-bottom:1.5px solid var(--brd);padding:.62rem 1rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:20;box-shadow:0 1px 4px rgba(75,120,45,.08)}
+.hdr-logo{display:flex;align-items:center;gap:.58rem}
+.ubadge{display:flex;align-items:center;gap:.3rem;background:var(--bg3);border:1px solid var(--brd);border-radius:20px;padding:.14rem .48rem .14rem .14rem;font-size:.7rem;color:var(--txm)}
+.uav{width:20px;height:20px;border-radius:50%;background:var(--grn);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.58rem;font-weight:800;flex-shrink:0}
+/* tabs */
+.nav-tabs{display:flex;gap:.35rem;background:var(--bg2);border-bottom:1.5px solid var(--brd);padding:.5rem .6rem 0;overflow-x:auto;scrollbar-width:none}
+.nav-tabs::-webkit-scrollbar{display:none}
+.ntab{flex-shrink:0;padding:.4rem .8rem;border-radius:8px 8px 0 0;font-family:var(--fc);font-size:.82rem;font-weight:700;color:var(--txm);cursor:pointer;border:1.5px solid transparent;transition:all .15s;white-space:nowrap}
+.ntab.active{color:var(--grn);background:var(--grnp);border-color:var(--grnm);border-bottom-color:var(--grnp)}
+.ntab:hover:not(.active){color:var(--tx)}
+.content{flex:1;overflow-y:auto;padding:.9rem}
+/* cards */
+.card{background:var(--bg2);border:1.5px solid var(--brd);border-radius:12px;padding:.82rem;margin-bottom:.52rem;position:relative;overflow:hidden}
+.cttl{font-family:var(--fc);font-size:.87rem;font-weight:700;color:var(--tx);margin-bottom:.15rem}
+.csub{font-family:var(--fmo);font-size:.62rem;color:var(--txm)}
+.cmeta{display:flex;flex-wrap:wrap;gap:.2rem;margin-top:.38rem}
+.cm{font-size:.64rem;background:var(--bg3);border:1px solid var(--brd);border-radius:5px;padding:.06rem .3rem;color:var(--txm);font-family:var(--fmo)}
+/* badges */
+.badge{font-family:var(--fmo);font-size:.59rem;padding:.1rem .33rem;border-radius:5px;white-space:nowrap;font-weight:600}
+.bok{background:var(--grnp);color:var(--grn);border:1px solid rgba(46,204,113,.3)}
+.bredp{background:var(--redp);color:var(--red);border:1px solid rgba(239,83,80,.3)}
+.bwarn{background:var(--orangep);color:var(--orange)}
+.bblue{background:var(--bluep);color:var(--blue)}
+/* kpi */
+.kgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:.5rem;margin-bottom:.85rem}
+.kcard{background:var(--bg2);border:1.5px solid var(--brd);border-radius:12px;padding:.72rem .82rem;position:relative;overflow:hidden}
+.kcard::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px}
+.kg::after{background:var(--grn)}.kgo::after{background:var(--gold)}.kb::after{background:var(--blue)}.kr::after{background:var(--red)}.ko::after{background:var(--orange)}
+.kval{font-family:var(--fc);font-size:1.5rem;font-weight:800;line-height:1;margin-bottom:.1rem}
+.klbl{font-family:var(--fmo);font-size:.56rem;color:var(--txm);text-transform:uppercase;letter-spacing:.7px}
+.ksub{font-size:.62rem;color:var(--txl);margin-top:.07rem}
+/* silos */
+.silo-grid{display:grid;grid-template-columns:1fr 1fr;gap:.52rem;margin-bottom:.7rem}
+.silo-card{background:var(--bg2);border:1.5px solid var(--brd);border-radius:12px;padding:.75rem;position:relative}
+.silo-prod{border-color:rgba(46,204,113,.4);background:rgba(46,204,113,.03)}
+.silo-nm{font-family:var(--fc);font-weight:800;font-size:.83rem;color:var(--tx)}
+.silo-t{font-family:var(--fmo);font-size:.73rem;font-weight:600;color:var(--gold);margin-top:.08rem}
+.sbar{background:var(--bg3);border-radius:20px;height:7px;overflow:hidden;margin:.25rem 0}
+.sfill{height:100%;border-radius:20px;transition:width .5s}
+.sinfo{font-size:.62rem;color:var(--txm);display:flex;justify-content:space-between}
+.stag{position:absolute;top:.45rem;right:.52rem;font-family:var(--fmo);font-size:.52rem;padding:.06rem .3rem;border-radius:4px;font-weight:600;background:var(--grnm);color:var(--grn)}
+/* tolvas */
+.tolva-grid{display:grid;grid-template-columns:1fr 1fr;gap:.52rem;margin-bottom:.7rem}
+.tolva-card{background:var(--bg2);border:1.5px solid var(--brd);border-radius:12px;padding:.75rem}
+/* stock */
+.stcard{background:var(--bg2);border:1.5px solid var(--brd);border-radius:12px;padding:.78rem .95rem;margin-bottom:.52rem}
+.stnm{font-family:var(--fc);font-weight:700;font-size:.87rem;color:var(--tx)}
+.stval{font-family:var(--fmo);font-size:.73rem;font-weight:600;color:var(--grn)}
+.stbar{background:var(--bg3);border-radius:20px;height:8px;overflow:hidden;margin:.25rem 0}
+.stfill{height:100%;border-radius:20px;transition:width .5s}
+.strow{display:flex;justify-content:space-between;font-size:.65rem;color:var(--txm)}
+/* lineas */
+.lst{background:var(--bg3);border:1.5px solid var(--brd);border-radius:8px;padding:.58rem .78rem;margin-bottom:.35rem;display:flex;align-items:center;justify-content:space-between}
+.lnm{font-family:var(--fc);font-weight:700;font-size:.87rem;color:var(--tx)}
+.lbadge{font-family:var(--fmo);font-size:.59rem;padding:.1rem .38rem;border-radius:5px;font-weight:600}
+.lon{background:var(--grnm);color:var(--grn)}.loff{background:var(--redp);color:var(--red)}
+/* modal */
+.mov{display:none;position:fixed;inset:0;background:rgba(20,35,15,.45);z-index:100;align-items:flex-start;justify-content:center;padding:1rem;backdrop-filter:blur(4px);overflow-y:auto}
+.mov.open{display:flex}
+.modal{background:var(--bg2);border:1.5px solid var(--brd);border-radius:16px;padding:1.35rem;width:100%;max-width:520px;margin:auto;position:relative;box-shadow:0 8px 32px rgba(75,120,45,.16)}
+.modal::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--grn),var(--gold));border-radius:16px 16px 0 0}
+.mttl{font-family:var(--fc);font-size:.98rem;font-weight:800;color:var(--tx);margin-bottom:.85rem;padding-right:2rem}
+.mx{position:absolute;top:.78rem;right:.78rem;background:var(--bg3);border:1px solid var(--brd);color:var(--txm);width:24px;height:24px;border-radius:6px;cursor:pointer;font-size:.76rem;display:flex;align-items:center;justify-content:center}
+.mx:hover{background:var(--brd);color:var(--tx)}
+/* toggle */
+.togr{display:flex;align-items:center;justify-content:space-between;padding:.42rem 0;border-bottom:1px solid var(--brd)}
+.togr:last-child{border-bottom:none}
+.togl{font-size:.8rem;color:var(--txm)}
+.tog{position:relative;width:36px;height:19px;flex-shrink:0}
+.tog input{opacity:0;width:0;height:0}
+.togsl{position:absolute;inset:0;background:var(--bg4);border-radius:20px;cursor:pointer;transition:.2s;border:1px solid var(--brd)}
+.togsl::before{content:'';position:absolute;height:13px;width:13px;left:3px;bottom:2px;background:var(--txm);border-radius:50%;transition:.2s}
+.tog input:checked+.togsl{background:var(--grn);border-color:var(--grn)}
+.tog input:checked+.togsl::before{transform:translateX(16px);background:#fff}
+/* table */
+.twrap{overflow-x:auto;border-radius:8px;border:1px solid var(--brd)}
+table{width:100%;border-collapse:collapse;font-size:.76rem}
+thead tr{background:var(--bg3);border-bottom:2px solid var(--brd)}
+th{padding:.45rem .68rem;text-align:left;font-family:var(--fmo);font-size:.58rem;color:var(--txm);text-transform:uppercase;letter-spacing:.6px;white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--brd);transition:background .12s}
+tbody tr:hover{background:var(--bg3)}
+td{padding:.5rem .68rem;vertical-align:middle;color:var(--txm)}
+td.tc{font-weight:600;color:var(--tx)}
+td.tm{font-family:var(--fmo);font-size:.73rem}
+/* panel */
+.ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:.85rem;flex-wrap:wrap;gap:.42rem}
+.pt{font-family:var(--fc);font-size:1.02rem;font-weight:800;color:var(--tx)}
+.ps{font-size:.72rem;color:var(--txm);margin-top:.07rem}
+.pa{display:flex;gap:.35rem;flex-wrap:wrap}
+/* nirs */
+.nirsbox{background:var(--bg3);border:2px dashed var(--brd2);border-radius:12px;padding:1rem;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:.45rem}
+.nirsbox:hover{border-color:var(--grn);background:var(--grnp)}
+.nirsres{background:var(--bg3);border:1.5px solid var(--grn);border-radius:12px;padding:.75rem;margin-top:.42rem;display:none}
+.nirsres.show{display:block}
+.nirsload{text-align:center;padding:.85rem;font-size:.76rem;color:var(--txm);display:none}
+.nirsload.show{display:block}
+/* upload */
+.upbox{background:var(--bg3);border:2px dashed var(--brd2);border-radius:10px;padding:.9rem;text-align:center;cursor:pointer;transition:all .2s}
+.upbox:hover{border-color:var(--grn);background:var(--grnp)}
+/* calc */
+.cbox{background:var(--bg3);border:1px solid var(--brd2);border-radius:8px;padding:.62rem;margin-top:.42rem}
+.clbl{font-family:var(--fmo);font-size:.57rem;color:var(--grn);letter-spacing:.8px;text-transform:uppercase;margin-bottom:.28rem}
+.crow{font-size:.74rem;color:var(--txm);margin-bottom:.16rem}
+/* live */
+.live{display:flex;align-items:center;gap:.26rem;font-family:var(--fmo);font-size:.59rem;color:var(--grn)}
+.ldot{width:5px;height:5px;border-radius:50%;background:var(--grn);animation:blink 1.5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+/* alert */
+.alrt{display:flex;align-items:center;gap:.58rem;background:var(--bg2);border:1.5px solid var(--brd);border-radius:8px;padding:.58rem .78rem;margin-bottom:.38rem}
+.alrt.urg{border-color:rgba(239,83,80,.4);background:rgba(239,83,80,.05)}
+.abody{flex:1;min-width:0}
+.attl{font-size:.82rem;font-weight:600;color:var(--tx)}
+.asub{font-size:.68rem;color:var(--txm);margin-top:.07rem}
+/* bar chart */
+.bchart{display:flex;align-items:flex-end;gap:3px;height:72px}
+.bcol{flex:1;border-radius:3px 3px 0 0;min-width:3px;cursor:pointer}
+.bcol:hover{opacity:.72}
+/* toast */
+.toast{position:fixed;bottom:1rem;left:50%;transform:translateX(-50%) translateY(80px);background:var(--bg2);border:1.5px solid var(--brd);border-left:3px solid var(--grn);border-radius:8px;padding:.5rem .9rem;font-size:.75rem;font-family:var(--fmo);color:var(--grn);z-index:300;transition:transform .3s;box-shadow:0 8px 32px rgba(75,120,45,.16);white-space:nowrap;max-width:calc(100vw - 2rem);text-align:center}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.err{border-left-color:var(--red);color:var(--red)}
+.toast.warn{border-left-color:var(--orange);color:var(--orange)}
+hr{border:none;border-top:1px solid var(--brd);margin:.6rem 0}
+@media(max-width:600px){.fr{flex-direction:column}.kgrid{grid-template-columns:repeat(2,1fr)}.silo-grid,.tolva-grid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="screen-splash" class="screen active">
+<div style="flex:1;display:flex;align-items:center;justify-content:center;padding:1.5rem">
+<div style="width:100%;max-width:350px;position:relative;z-index:1">
+  <div style="text-align:center;margin-bottom:1.8rem">
+    <div style="display:inline-flex;align-items:center;gap:.68rem;margin-bottom:.55rem">
+      <div style="width:44px;height:44px;background:var(--grn);border-radius:10px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(46,204,113,.3)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2L4 7v5c0 5 3.5 9.7 8 11 4.5-1.3 8-6 8-11V7L12 2z" fill="#fff"/><path d="M8 12l3 3 5-5" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div style="text-align:left">
+        <div style="font-family:var(--fc);font-size:1.5rem;font-weight:800;color:var(--tx);line-height:1">MBCBIO</div>
+        <div style="font-family:var(--fmo);font-size:.52rem;color:var(--txm);letter-spacing:1.5px">SISTEMA DE PRODUCCIÓN</div>
+      </div>
+    </div>
+    <div style="font-size:.7rem;color:var(--txm);font-family:var(--fmo)">GRUPO MBC · v5.0</div>
+  </div>
+  <div class="lcard">
+    <div style="font-family:var(--fc);font-size:.95rem;font-weight:700;color:var(--tx);margin-bottom:.75rem">Identificate para entrar</div>
+    <label>Tu nombre</label>
+    <select id="sel-user">
+      <option value="">— Seleccioná —</option>
+      <optgroup label="Encargados de Turno">
+        <option value="Carlos Nuñez|turno">Carlos Nuñez</option>
+        <option value="Victor Nuñez|turno">Victor Nuñez</option>
+        <option value="Rafael Ramirez|turno">Rafael Ramirez</option>
+      </optgroup>
+      <optgroup label="Operaciones">
+        <option value="Federico Deheza|descarga">Federico Deheza — Carga/Descarga</option>
+        <option value="Victor Deheza|jefe">Victor Deheza — Jefe de Planta</option>
+      </optgroup>
+      <optgroup label="Gestión">
+        <option value="Administración|admin">Administración</option>
+        <option value="Gerente de Producción|gerente">Gerente de Producción</option>
+      </optgroup>
+    </select>
+    <button class="btn btn-grn" style="margin-top:.82rem" onclick="loginUser()">Entrar →</button>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- SETUP PRIMERA VEZ -->
+<div id="screen-setup" class="screen">
+<div style="flex:1;display:flex;align-items:center;justify-content:center;padding:1.5rem;overflow-y:auto">
+<div style="width:100%;max-width:440px">
+  <div class="lcard">
+    <div style="font-family:var(--fc);font-size:1.05rem;font-weight:800;color:var(--grn);margin-bottom:.3rem">⚙ Configuración inicial</div>
+    <div style="font-size:.76rem;color:var(--txm);margin-bottom:.95rem">Cargá el stock real de hoy para arrancar desde cero.</div>
+
+    <div class="sec">
+      <div class="sttl">🏗 Stock inicial soja por silo</div>
+      <div class="fr">
+        <div><label>Silo 1 — Producción (t)</label><input type="number" step="0.1" id="si-s1" placeholder="0"/></div>
+        <div><label>Silo 2 (t)</label><input type="number" step="0.1" id="si-s2" placeholder="0"/></div>
+      </div>
+      <div class="fr">
+        <div><label>Silo 3 (t)</label><input type="number" step="0.1" id="si-s3" placeholder="0"/></div>
+        <div><label>Silo 4 (t)</label><input type="number" step="0.1" id="si-s4" placeholder="0"/></div>
+      </div>
+      <div style="font-size:.65rem;color:var(--txl);margin-top:.28rem;font-family:var(--fmo)">Cap. por silo ~750 t · Total ~3.000 t</div>
+    </div>
+
+    <div class="sec">
+      <div class="sttl">🛢 Stock inicial productos terminados</div>
+      <div class="fr">
+        <div><label>Aceite — Tanque (t)</label><input type="number" step="0.1" id="si-ace" placeholder="0"/></div>
+        <div><label>Expeller — Tolva 1 (t)</label><input type="number" step="0.1" id="si-t1" placeholder="0"/></div>
+      </div>
+      <div class="fr">
+        <div><label>Expeller — Tolva 2 (t)</label><input type="number" step="0.1" id="si-t2" placeholder="0"/></div>
+        <div><label>Fecha de arranque</label><input type="date" id="si-fecha"/></div>
+      </div>
+    </div>
+
+    <div style="font-size:.73rem;color:var(--txm);background:var(--grnp);border:1px solid rgba(46,204,113,.2);padding:.5rem .7rem;border-radius:7px;margin-bottom:.6rem">
+      💡 El sistema calcula el stock teórico hacia adelante desde estos valores usando los pasajes de aceite y el % histórico de extracción. Cuando vaciés un silo o tolva podés cargar el real para afinar el modelo.
+    </div>
+
+    <button class="btn btn-grn" onclick="guardarSetup()">Guardar y comenzar →</button>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- MAIN -->
+<div id="screen-main" class="screen">
+  <div class="nav-tabs">
+    <div class="ntab active" data-panel="dashboard" onclick="swP(this)">📊 Dashboard</div>
+    <div class="ntab" data-panel="ingreso" onclick="swP(this)">🚛 Ingreso MP</div>
+    <div class="ntab" data-panel="silos" onclick="swP(this)">🏗 Silos</div>
+    <div class="ntab" data-panel="produccion" onclick="swP(this)">⚙️ Producción</div>
+    <div class="ntab" data-panel="analisis" onclick="swP(this)">🔬 Análisis</div>
+    <div class="ntab" data-panel="stock" onclick="swP(this)">📦 Stock</div>
+    <div class="ntab" data-panel="salidas" onclick="swP(this)">🚚 Salidas</div>
+    <div class="ntab" data-panel="kpis" onclick="swP(this)">📈 KPIs</div>
+    <div class="ntab" data-panel="autorizaciones" onclick="swP(this)">🔐 Auth <span id="auth-badge" class="badge bredp" style="display:none">0</span></div>
+    <div class="ntab" data-panel="informes" onclick="swP(this)">📊 Informes</div>
+    <div class="ntab" data-panel="config" onclick="swP(this)">⚙ Config</div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="panel-dashboard" class="content">
+    <div class="ph"><div><div class="pt">Dashboard</div><div class="ps" id="dash-fecha">—</div></div><div class="live"><div class="ldot"></div>Tiempo real</div></div>
+    <div class="kgrid">
+      <div class="kcard kgo"><div class="kval" style="color:var(--gold)" id="d-soja">0 t</div><div class="klbl">Stock soja total</div></div>
+      <div class="kcard kb"><div class="kval" style="color:var(--blue)" id="d-ace">0 t</div><div class="klbl">Stock aceite</div></div>
+      <div class="kcard kg"><div class="kval" style="color:var(--grn)" id="d-exp">0 t</div><div class="klbl">Stock expeller</div></div>
+      <div class="kcard kg"><div class="kval" style="color:var(--grn);font-size:1.3rem" id="d-ext">—%</div><div class="klbl">Extracción aceite</div><div class="ksub">Indicador central</div></div>
+      <div class="kcard ko"><div class="kval" style="color:var(--orange)" id="d-ing">0 t</div><div class="klbl">Ingresado este mes</div></div>
+      <div class="kcard kr"><div class="kval" style="color:var(--red)" id="d-auth">0</div><div class="klbl">Auth. pendientes</div></div>
+    </div>
+    <div class="sec">
+      <div class="sttl">Estado de líneas de producción</div>
+      <div class="fr">
+        <div class="lst"><span class="lnm">Línea 1</span><span class="lbadge" id="ls-l1">—</span></div>
+        <div class="lst"><span class="lnm">Línea 2</span><span class="lbadge" id="ls-l2">—</span></div>
+      </div>
+    </div>
+    <div class="sec"><div class="sttl">Últimos ingresos de soja</div><div id="dash-ing"></div></div>
+    <div class="sec"><div class="sttl">Últimos análisis</div><div id="dash-anal"></div></div>
+  </div>
+
+  <!-- INGRESO MP -->
+  <div id="panel-ingreso" class="content hidden">
+    <div class="ph">
+      <div><div class="pt">Ingreso Materia Prima</div><div class="ps">Registro descarga soja · Asignación a silo</div></div>
+      <div class="pa"><button class="bsm bsg" onclick="abrirIngreso()">+ Nuevo ingreso</button></div>
+    </div>
+    <div style="display:flex;gap:.35rem;margin-bottom:.65rem;flex-wrap:wrap">
+      <input id="fil-prov" placeholder="Filtrar proveedor..." style="flex:1;min-width:110px" oninput="renderIngresos()"/>
+      <select id="fil-est" style="width:125px" onchange="renderIngresos()">
+        <option value="">Todos</option><option value="autorizado">Autorizados</option><option value="pendiente_auth">Pendientes</option>
+      </select>
+    </div>
+    <div id="list-ingresos"></div>
+  </div>
+
+  <!-- SILOS -->
+  <div id="panel-silos" class="content hidden">
+    <div class="ph">
+      <div><div class="pt">Gestión de Silos</div><div class="ps">Stock por silo · Secadora · Movimientos</div></div>
+      <div class="pa">
+        <button class="bsm bsn" onclick="abrirSecadora()">🌡 Secadora</button>
+        <button class="bsm bsb" onclick="abrirMovSilo()">↔ Mover soja</button>
+      </div>
+    </div>
+    <div class="silo-grid" id="silo-grid"></div>
+    <div class="sec">
+      <div class="sttl">🌡 Última actividad secadora</div>
+      <div id="sec-status"></div>
+    </div>
+    <div class="sec">
+      <div class="sttl">Historial movimientos entre silos</div>
+      <div id="list-mov-silos"></div>
+    </div>
+  </div>
+
+  <!-- PRODUCCION -->
+  <div id="panel-produccion" class="content hidden">
+    <div class="ph">
+      <div><div class="pt">Control de Producción</div><div class="ps">Turnos · Arranques · Paradas · Aceite</div></div>
+      <div class="pa">
+        <button class="bsm bsn" onclick="abrirArranqueParada()">⚡ Arranque/Parada</button>
+        <button class="bsm bsg" onclick="abrirTurno()">+ Turno</button>
+        <button class="bsm bso" onclick="abrirPasaje()">🛢 Pasaje aceite</button>
+      </div>
+    </div>
+    <div class="sec"><div class="sttl">Estado actual de líneas</div><div id="lineas-prod"></div></div>
+    <div class="sec">
+      <div class="sttl" style="justify-content:space-between">
+        <span style="display:flex;align-items:center;gap:.35rem"><span style="content:'';width:3px;height:10px;background:var(--grn);border-radius:2px;display:block"></span>Pasajes de aceite al tanque</span>
+      </div>
+      <div id="list-pasajes"></div>
+    </div>
+    <div style="font-family:var(--fc);font-size:.75rem;font-weight:700;color:var(--txm);letter-spacing:.5px;text-transform:uppercase;margin-bottom:.42rem">Turnos registrados</div>
+    <div id="list-turnos"></div>
+  </div>
+
+  <!-- ANALISIS -->
+  <div id="panel-analisis" class="content hidden">
+    <div class="ph">
+      <div><div class="pt">Análisis de Proceso</div><div class="ps">NIRS + control cada 4 horas por turno</div></div>
+      <button class="bsm bsg" onclick="abrirAnalisis()">+ Nuevo análisis</button>
+    </div>
+    <div id="list-analisis"></div>
+  </div>
+
+  <!-- STOCK -->
+  <div id="panel-stock" class="content hidden">
+    <div class="ph">
+      <div><div class="pt">Stock en Tiempo Real</div><div class="ps">Teórico calculado · Ajuste con reales</div></div>
+      <button class="bsm bsb" onclick="abrirReal()">📋 Cargar real</button>
+    </div>
+    <div style="font-family:var(--fmo);font-size:.57rem;color:var(--txm);letter-spacing:.8px;text-transform:uppercase;margin-bottom:.42rem">SOJA — TOTAL SILOS</div>
+    <div id="st-soja"></div>
+    <div style="font-family:var(--fmo);font-size:.57rem;color:var(--txm);letter-spacing:.8px;text-transform:uppercase;margin:.5rem 0 .35rem">SOJA — DESGLOSE POR SILO</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.45rem;margin-bottom:.6rem" id="st-silos-ind"></div>
+    <div style="font-family:var(--fmo);font-size:.57rem;color:var(--txm);letter-spacing:.8px;text-transform:uppercase;margin:.58rem 0 .42rem">PRODUCTOS TERMINADOS</div>
+    <div id="st-ace"></div>
+    <div id="st-exp1"></div>
+    <div id="st-exp2"></div>
+    <div class="sec" style="margin-top:.6rem">
+      <div class="sttl">Historial de cargas reales</div>
+      <div id="list-reales"></div>
+    </div>
+  </div>
+
+  <!-- SALIDAS -->
+  <div id="panel-salidas" class="content hidden">
+    <div class="ph">
+      <div><div class="pt">Salidas de Producto</div><div class="ps">Aceite y Expeller despachados</div></div>
+      <div class="pa">
+        <button class="bsm bsb" onclick="abrirSalidaAce()">🛢 Aceite</button>
+        <button class="bsm bsg" onclick="abrirSalidaExp()">📦 Expeller</button>
+      </div>
+    </div>
+    <div class="kgrid" style="grid-template-columns:repeat(3,1fr)">
+      <div class="kcard kg"><div class="kval" style="color:var(--grn);font-size:1.2rem" id="s-exp-t">0 t</div><div class="klbl">Expeller despachado</div></div>
+      <div class="kcard kb"><div class="kval" style="color:var(--blue);font-size:1.2rem" id="s-ace-t">0 t</div><div class="klbl">Aceite despachado</div></div>
+      <div class="kcard kgo"><div class="kval" style="color:var(--gold);font-size:1rem" id="s-imp-t">$0</div><div class="klbl">Facturación total</div></div>
+    </div>
+    <div id="list-salidas"></div>
+  </div>
+
+  <!-- KPIs -->
+  <div id="panel-kpis" class="content hidden">
+    <div class="ph"><div><div class="pt">KPIs de Eficiencia</div><div class="ps">Extracción · Calidad · Pérdidas · Proveedores</div></div></div>
+    <div style="background:linear-gradient(135deg,var(--bg2),var(--bg3));border:2px solid rgba(46,204,113,.25);border-radius:14px;padding:.95rem;margin-bottom:.85rem">
+      <div style="font-family:var(--fmo);font-size:.58rem;color:var(--txm);letter-spacing:.8px;text-transform:uppercase;margin-bottom:.28rem">INDICADOR CENTRAL DE RENTABILIDAD</div>
+      <div style="display:flex;align-items:baseline;gap:.35rem">
+        <div style="font-family:var(--fc);font-size:2.3rem;font-weight:800;color:var(--grn);line-height:1" id="kpi-ext-big">—%</div>
+        <div style="font-size:.76rem;color:var(--txm)">extracción de aceite promedio</div>
+      </div>
+      <div style="font-size:.71rem;color:var(--txm);margin-top:.28rem">↑ Mayor extracción = mayor proteína en expeller = mayor rentabilidad en ambos productos</div>
+    </div>
+    <div class="kgrid">
+      <div class="kcard kr"><div class="kval" style="color:var(--red)" id="kpi-pp">—%</div><div class="klbl">Pérd. proceso</div></div>
+      <div class="kcard kg"><div class="kval" style="color:var(--grn)" id="kpi-recup">—%</div><div class="klbl">Recuperación</div></div>
+      <div class="kcard kb"><div class="kval" style="color:var(--blue)" id="kpi-prot">—%</div><div class="klbl">Proteína final</div><div class="ksub">Target &gt;44%</div></div>
+      <div class="kcard ko"><div class="kval" style="color:var(--orange)" id="kpi-aceexp">—%</div><div class="klbl">Aceite en expeller</div><div class="ksub">Target &lt;2%</div></div>
+      <div class="kcard kgo"><div class="kval" style="color:var(--gold)" id="kpi-tl1">—°C</div><div class="klbl">Temp prensa L1</div></div>
+      <div class="kcard kgo"><div class="kval" style="color:var(--gold)" id="kpi-tl2">—°C</div><div class="klbl">Temp prensa L2</div></div>
+    </div>
+    <div class="sec">
+      <div class="sttl">Extracción diaria — tendencia</div>
+      <div style="background:var(--bg3);border:1px solid var(--brd);border-radius:8px;padding:.65rem">
+        <div style="font-family:var(--fmo);font-size:.56rem;color:var(--txm);text-transform:uppercase;margin-bottom:.42rem">% extracción por día (verde=sobre prom · rojo=bajo prom)</div>
+        <div id="chart-ext" class="bchart"></div>
+        <div id="chart-ext-l" style="display:flex;gap:3px;margin-top:.2rem;overflow:hidden"></div>
+      </div>
+    </div>
+    <div class="sec"><div class="sttl">Rendimiento por proveedor</div><div id="kpi-prov"></div></div>
+    <div class="sec"><div class="sttl">Extracción promedio por encargado de turno</div><div id="kpi-enc"></div></div>
+  </div>
+
+  <!-- AUTORIZACIONES -->
+  <div id="panel-autorizaciones" class="content hidden">
+    <div class="ph"><div><div class="pt">Autorizaciones Pendientes</div><div class="ps">Solo Gerente de Producción puede autorizar</div></div></div>
+    <div id="list-auth"></div>
+  </div>
+
+  <!-- INFORMES (tiempos de proceso de los pedidos de venta de BIO — se calculan en el
+       sistema principal, acá solo se muestran) -->
+  <div id="panel-informes" class="content hidden">
+    <div class="ph"><div><div class="pt">Informes</div><div class="ps">Tiempos de proceso de los pedidos de venta de BIO</div></div></div>
+    <div id="bio-informes-tiempos" style="display:flex;gap:.6rem;flex-wrap:wrap;"></div>
+  </div>
+
+  <!-- CONFIG -->
+  <div id="panel-config" class="content hidden">
+    <div class="pt" style="margin-bottom:.85rem">Configuración del Sistema</div>
+
+    <!-- IMPORTAR BASE -->
+    <div class="sec">
+      <div class="sttl">📂 Importar base de datos</div>
+      <p style="font-size:.76rem;color:var(--txm);margin-bottom:.65rem">Subí un Excel o CSV. La primera columna debe tener el nombre. Podés importar proveedores, transportistas o clientes.</p>
+      <div class="fr" style="margin-bottom:.55rem">
+        <div>
+          <label>Tipo de base</label>
+          <select id="imp-tipo">
+            <option value="proveedores">Proveedores de soja</option>
+            <option value="transportistas">Transportistas</option>
+            <option value="clientes">Clientes</option>
+          </select>
+        </div>
+        <div style="display:flex;align-items:flex-end">
+          <div class="upbox" style="padding:.55rem .9rem;flex:1" onclick="document.getElementById('imp-file').click()">
+            <input type="file" id="imp-file" accept=".xlsx,.xls,.csv" style="display:none" onchange="importarBase(this)"/>
+            <div style="font-size:.76rem;color:var(--txm)">📁 Subir Excel / CSV</div>
+          </div>
+        </div>
+      </div>
+      <div id="imp-preview" style="display:none">
+        <div style="font-family:var(--fmo);font-size:.63rem;color:var(--grn);margin-bottom:.35rem" id="imp-count"></div>
+        <div id="imp-list" style="max-height:110px;overflow-y:auto;background:var(--bg3);border-radius:7px;padding:.45rem;font-size:.73rem;color:var(--txm)"></div>
+        <button class="bsave" onclick="confirmarImport()">✓ Confirmar importación</button>
+      </div>
+    </div>
+
+    <!-- PROVEEDORES -->
+    <div class="sec">
+      <div class="sttl">Proveedores de soja</div>
+      <div style="display:flex;gap:.35rem;margin-bottom:.42rem">
+        <input id="np-n" placeholder="Nombre del proveedor" style="flex:1"/>
+        <button class="bsm bsg" onclick="agregarItem('proveedores','np-n','list-proveedores')">+ Agregar</button>
+      </div>
+      <div id="list-proveedores"></div>
+    </div>
+
+    <!-- TRANSPORTISTAS -->
+    <div class="sec">
+      <div class="sttl">Transportistas</div>
+      <div style="display:flex;gap:.35rem;margin-bottom:.42rem">
+        <input id="nt-n" placeholder="Nombre del transportista" style="flex:1"/>
+        <button class="bsm bsg" onclick="agregarItem('transportistas','nt-n','list-transportistas')">+ Agregar</button>
+      </div>
+      <div id="list-transportistas"></div>
+    </div>
+
+    <!-- CLIENTES -->
+    <div class="sec">
+      <div class="sttl">Clientes</div>
+      <div style="display:flex;gap:.35rem;margin-bottom:.42rem">
+        <input id="nc-n" placeholder="Nombre del cliente" style="flex:1"/>
+        <button class="bsm bsg" onclick="agregarItem('clientes','nc-n','list-clientes')">+ Agregar</button>
+      </div>
+      <div id="list-clientes"></div>
+    </div>
+
+    <!-- PARAMETROS -->
+    <div class="sec">
+      <div class="sttl">Capacidad — Silos de soja (t)</div>
+      <div class="fr">
+        <div><label>Silo 1 — Producción (t)</label><input type="number" id="cap-s1" value="750"/></div>
+        <div><label>Silo 2 (t)</label><input type="number" id="cap-s2" value="750"/></div>
+      </div>
+      <div class="fr">
+        <div><label>Silo 3 (t)</label><input type="number" id="cap-s3" value="750"/></div>
+        <div><label>Silo 4 (t)</label><input type="number" id="cap-s4" value="750"/></div>
+      </div>
+    </div>
+    <div class="sec">
+      <div class="sttl">Capacidad — Productos terminados (t)</div>
+      <div class="fr">
+        <div><label>Tanque aceite (t)</label><input type="number" id="cap-ace" value="300"/></div>
+        <div><label>Tolva 1 — Expeller (t)</label><input type="number" id="cap-t1" value="250"/></div>
+      </div>
+      <div class="fr">
+        <div><label>Tolva 2 — Expeller (t)</label><input type="number" id="cap-t2" value="250"/></div>
+        <div><label>Secadora (t)</label><input type="number" id="cap-sec" value="10"/></div>
+      </div>
+    </div>
+    <div class="sec">
+      <div class="sttl">Parámetros operativos</div>
+      <div class="fr">
+        <div><label>Umbral diferencia kg</label><input type="number" id="cfg-dif" value="100"/></div>
+        <div><label>Hum. máx. silo prod. (%)</label><input type="number" step="0.1" id="cfg-hum" value="10"/></div>
+      </div>
+      <button class="bsave" onclick="guardarCfg()">Guardar parámetros</button>
+    </div>
+
+    <!-- STOCK INICIAL -->
+    <div class="sec">
+      <div class="sttl">⚙ Editar stock inicial</div>
+      <p style="font-size:.76rem;color:var(--txm);margin-bottom:.55rem">Si necesitás corregir los valores de arranque.</p>
+      <button class="bsm bsn" onclick="irSetup()">Editar stock inicial</button>
+    </div>
+  </div>
+</div>
+
+<div id="mov" class="mov"><div class="modal"><button class="mx" onclick="closeM()">✕</button><div class="mttl" id="m-ttl"></div><div id="m-body"></div></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══ ESTADO GLOBAL ═══
+var ingresos=[],turnos=[],analisis=[],salidas=[],autorizaciones=[],pasajes=[],movSilos=[],realesHist=[];
+var proveedores=[],transportistas=[],clientes=[];
+var cfg={capS1:750,capS2:750,capS3:750,capS4:750,capSilo:750,capAce:300,capT1:250,capT2:250,capTolva:250,capSec:10,umbralDif:100,humMaxProd:10};
+var lineas={L1:{activa:false},L2:{activa:false}};
+var stockIni={s1:0,s2:0,s3:0,s4:0,ace:0,t1:0,t2:0,fecha:''};
+var pctAce=0.185; // % extracción aceite base — se afina con análisis reales
+var _impBuf=null,_impTipo='';
+
+// ═══ INIT ═══
+document.addEventListener('DOMContentLoaded',function(){
+  // Reset completo si es la primera vez con v5
+  if(localStorage.getItem('bio_version')!=='5'){
+    var keysToRemove=['bio_user','bio_setup_ok','bio_ing','bio_tur','bio_anal','bio_sal',
+      'bio_auth','bio_pasajes','bio_mov_silos','bio_reales','bio_prov','bio_trans',
+      'bio_cli','bio_cfg','bio_lineas','bio_stk_ini','bio_arr'];
+    keysToRemove.forEach(function(k){localStorage.removeItem(k);});
+    localStorage.setItem('bio_version','5');
+  }
+  cargarLocal();
+  // Por ahora, mientras se revisa visualmente el sistema, entra directo sin pedir
+  // nombre (con acceso completo). Cuando esto pase a uso real, se vuelve a pedir
+  // identificarse acá (queda el resto del código de "¿Quién sos?" ya armado, solo
+  // hay que volver a activarlo).
+  window._user={nombre:'Administración',role:'gerente'};
+  sv('bio_user',window._user);
+  checkSetup();
+  document.getElementById('si-fecha').value=hoy();
+});
+
+function ls(k,d){try{return JSON.parse(localStorage.getItem(k)||'null')||d;}catch(e){return d;}}
+function sv(k,v){localStorage.setItem(k,JSON.stringify(v));}
+
+function cargarLocal(){
+  proveedores=ls('bio_prov',[]);
+  transportistas=ls('bio_trans',[]);
+  clientes=ls('bio_cli',[]);
+  cfg=Object.assign(cfg,ls('bio_cfg',{}));
+  lineas=ls('bio_lineas',{L1:{activa:false},L2:{activa:false}});
+  stockIni=ls('bio_stk_ini',{s1:0,s2:0,s3:0,s4:0,ace:0,t1:0,t2:0,fecha:''});
+  ingresos=ls('bio_ing',[]);
+  turnos=ls('bio_tur',[]);
+  analisis=ls('bio_anal',[]);
+  salidas=ls('bio_sal',[]);
+  autorizaciones=ls('bio_auth',[]).filter(function(a){return a.estado==='pendiente';});
+  pasajes=ls('bio_pasajes',[]);
+  movSilos=ls('bio_mov_silos',[]);
+  realesHist=ls('bio_reales',[]);
+  afinaPct();
+}
+
+
+
+// ═══ LOGIN / SETUP ═══
+function loginUser(){
+  var val=document.getElementById('sel-user').value;
+  if(!val){toast('Seleccioná tu nombre','err');return;}
+  var p=val.split('|');
+  window._user={nombre:p[0],role:p[1]};
+  sv('bio_user',window._user);
+  checkSetup();
+}
+
+function checkSetup(){
+  var u=window._user;
+  if(!localStorage.getItem('bio_setup_ok')&&(u.role==='gerente'||u.role==='admin')){
+    show('screen-setup');
+  }else{
+    goMain();
+  }
+}
+
+function guardarSetup(){
+  stockIni={
+    s1:parseFloat(gv('si-s1'))||0,s2:parseFloat(gv('si-s2'))||0,
+    s3:parseFloat(gv('si-s3'))||0,s4:parseFloat(gv('si-s4'))||0,
+    ace:parseFloat(gv('si-ace'))||0,
+    t1:parseFloat(gv('si-t1'))||0,t2:parseFloat(gv('si-t2'))||0,
+    fecha:gv('si-fecha')||hoy()
+  };
+  sv('bio_stk_ini',stockIni);
+  localStorage.setItem('bio_setup_ok','1');
+  toast('✅ Stock inicial guardado','ok');
+  goMain();
+}
+
+function irSetup(){
+  document.getElementById('si-s1').value=stockIni.s1;
+  document.getElementById('si-s2').value=stockIni.s2;
+  document.getElementById('si-s3').value=stockIni.s3;
+  document.getElementById('si-s4').value=stockIni.s4;
+  document.getElementById('si-ace').value=stockIni.ace;
+  document.getElementById('si-t1').value=stockIni.t1;
+  document.getElementById('si-t2').value=stockIni.t2;
+  document.getElementById('si-fecha').value=stockIni.fecha||hoy();
+  show('screen-setup');
+}
+
+function cerrarSesion(){localStorage.removeItem('bio_user');window._user=null;show('screen-splash');}
+
+function goMain(){
+  show('screen-main');
+  document.getElementById('dash-fecha').textContent=new Date().toLocaleDateString('es-AR',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  renderAll();
+  renderConfigLists();
+}
+
+// ═══ TABS ═══
+function show(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});document.getElementById(id).classList.add('active');}
+function swP(el){
+  document.querySelectorAll('.ntab').forEach(function(t){t.classList.remove('active');});el.classList.add('active');
+  document.querySelectorAll('[id^="panel-"]').forEach(function(p){p.classList.add('hidden');});
+  document.getElementById('panel-'+el.dataset.panel).classList.remove('hidden');
+  if(el.dataset.panel==='informes') renderInformesBio();
+}
+
+// Los "tiempos de proceso" (Autorización/Producción/Logística) se calculan sobre los
+// PEDIDOS DE VENTA de BIO, que viven en el sistema principal (Firestore, colección
+// 'pedidos'), no acá en BioStore. Como este archivo corre en un iframe del sistema
+// principal, se reusa directo la función que ya arma esas tarjetas ahí, en vez de
+// duplicar la lógica acá adentro.
+function renderInformesBio(){
+  var el=document.getElementById('bio-informes-tiempos'); if(!el) return;
+  var P=window.__bioParent||window.parent;
+  if(P && typeof P._tiemposProcesoCardsHtml==='function'){
+    el.innerHTML=P._tiemposProcesoCardsHtml('BIO');
+  } else {
+    el.innerHTML='<div style="color:var(--txm);font-size:.8rem;">No se pudo conectar con el sistema principal para traer estos datos.</div>';
+  }
+}
+function openM(){document.getElementById('mov').classList.add('open');document.getElementById('mov').scrollTop=0;}
+function closeM(){document.getElementById('mov').classList.remove('open');}
+document.getElementById('mov').addEventListener('click',function(e){if(e.target===document.getElementById('mov'))closeM();});
+
+// ═══ RENDER ALL ═══
+function renderAll(){
+  calcStock();renderDash();renderIngresos();renderTurnos();renderAnalisis();
+  renderSalidas();renderAuth();updKpis();renderSilos();renderMovSilos();
+  renderPasajes();renderLineasEstado();renderRealesHist();
+}
+
+// ═══ STOCK Y CÁLCULO ═══
+function calcStock(){
+  // Stock soja: inicial + ingresos autorizados - consumo estimado
+  var ingKg=ingresos.filter(function(i){return i.estado==='autorizado';}).reduce(function(s,i){return s+(i.kgBalanza||0);},0)/1000;
+  var kgAceProd=pasajes.reduce(function(s,p){return s+(p.kgAceiteTeorico||0);},0);
+  var sojaConsum=kgAceProd>0?(kgAceProd/pctAce)/1000:0;
+  var movAdj=0;
+  // Los movimientos son internos entre silos, no afectan el total
+  var stockSojaTotal=Math.max(0,(stockIni.s1+stockIni.s2+stockIni.s3+stockIni.s4)+ingKg-sojaConsum);
+
+  // Aceite: inicial + producido - salido
+  var kgSalAce=salidas.filter(function(x){return x.tipo==='aceite';}).reduce(function(s,x){return s+(x.kg||0);},0);
+  var stockAce=Math.max(0,stockIni.ace*1000+kgAceProd-kgSalAce)/1000;
+
+  // Expeller por tolva: inicial + prod estimado - salidas por tolva
+  var kgExpProd=kgAceProd>0?(kgAceProd/pctAce)*0.8305:0;
+  var kgSalT1=salidas.filter(function(x){return x.tipo==='expeller'&&x.tolva==='Tolva 1';}).reduce(function(s,x){return s+(x.kg||0);},0);
+  var kgSalT2=salidas.filter(function(x){return x.tipo==='expeller'&&x.tolva==='Tolva 2';}).reduce(function(s,x){return s+(x.kg||0);},0);
+  var kgSalExpSinTolva=salidas.filter(function(x){return x.tipo==='expeller'&&!x.tolva;}).reduce(function(s,x){return s+(x.kg||0);},0);
+  var stockT1=Math.max(0,stockIni.t1*1000+(kgExpProd/2)-kgSalT1)/1000;
+  var stockT2=Math.max(0,stockIni.t2*1000+(kgExpProd/2)-kgSalT2-(kgSalExpSinTolva/2))/1000;
+  var stockExpTot=stockT1+stockT2;
+
+  // Aplicar ajuste por reales cargados
+  var ultReal=realesHist.slice().sort(function(a,b){return b.tsn-a.tsn;});
+  var rAce=ultReal.find(function(r){return r.producto==='aceite';});
+  var rT1=ultReal.find(function(r){return r.producto==='tolva1';});
+  var rT2=ultReal.find(function(r){return r.producto==='tolva2';});
+  if(rAce) stockAce=parseFloat(rAce.valor)||stockAce;
+  if(rT1) stockT1=parseFloat(rT1.valor)||stockT1;
+  if(rT2) stockT2=parseFloat(rT2.valor)||stockT2;
+
+  // Actualizar DOM
+  setText('d-soja',stockSojaTotal.toFixed(1)+' t');
+  setText('d-ace',stockAce.toFixed(1)+' t');
+  setText('d-exp',(stockT1+stockT2).toFixed(1)+' t');
+  renderBarSt('st-ace','Tanque de Aceite',stockAce,cfg.capAce,'var(--blue)');
+  renderBarSt('st-exp1','Tolva 1 — Expeller',stockT1,cfg.capT1||cfg.capTolva,'var(--grn)');
+  renderBarSt('st-exp2','Tolva 2 — Expeller',stockT2,cfg.capT2||cfg.capTolva,'var(--grn)');
+  // Soja total
+  renderBarSt('st-soja','Silos 1+2+3+4 — Soja',stockSojaTotal,cfg.capSilo*4,'var(--gold)');
+  // Silos individuales (panel stock)
+  renderSilosStock();
+  // Silos individuales (panel silos)
+  renderSilos();
+}
+
+function renderBarSt(id,nm,val,cap,col){
+  var c=document.getElementById(id);if(!c)return;
+  var pct=cap>0?Math.min(100,(val/cap)*100):0;
+  var bc=pct>85?'var(--red)':pct<15?'var(--red)':pct<30?'var(--orange)':col;
+  var stl=pct>85?'<span style="color:var(--red)">⚠ Casi lleno</span>':pct<20?'<span style="color:var(--red)">⚠ Stock bajo</span>':'<span style="color:var(--txl)">✓ OK</span>';
+  c.innerHTML='<div class="stcard"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.38rem"><div class="stnm">'+nm+'</div><div class="stval">'+val.toFixed(1)+' t</div></div>'+
+    '<div class="stbar"><div class="stfill" style="width:'+pct+'%;background:'+bc+'"></div></div>'+
+    '<div class="strow"><span>'+pct.toFixed(1)+'% — cap. '+cap+' t</span>'+stl+'</div></div>';
+}
+
+function renderSilosStock(){
+  var el=document.getElementById('st-silos-ind');if(!el)return;
+  var ingS={1:0,2:0,3:0,4:0};
+  ingresos.filter(function(i){return i.estado==='autorizado'&&i.silo;}).forEach(function(i){
+    var n=parseInt((i.silo||'').replace(/\D/g,''))||0;
+    if(ingS[n]!==undefined) ingS[n]+=(i.kgBalanza||0)/1000;
+  });
+  var movEnt={1:0,2:0,3:0,4:0},movSal={1:0,2:0,3:0,4:0};
+  movSilos.forEach(function(m){
+    var o=parseInt((m.siloOrigen||'').replace(/\D/g,''))||0;
+    var d=parseInt((m.siloDest||'').replace(/\D/g,''))||0;
+    if(movSal[o]!==undefined) movSal[o]+=(m.cantidad||0);
+    if(movEnt[d]!==undefined) movEnt[d]+=(m.cantidad||0);
+  });
+  var ultReal=realesHist.slice().sort(function(a,b){return b.tsn-a.tsn;});
+  var ini=[stockIni.s1,stockIni.s2,stockIni.s3,stockIni.s4];
+  var kgAceProd=pasajes.reduce(function(s,p){return s+(p.kgAceiteTeorico||0);},0);
+  var sojaConsum=kgAceProd>0?(kgAceProd/pctAce)/1000:0;
+  var nombres=['Silo 1 — Producción','Silo 2','Silo 3','Silo 4'];
+  var caps={1:cfg.capS1||cfg.capSilo,2:cfg.capS2||cfg.capSilo,3:cfg.capS3||cfg.capSilo,4:cfg.capS4||cfg.capSilo};
+  el.innerHTML=[1,2,3,4].map(function(n){
+    var rReal=ultReal.find(function(r){return r.producto==='silo'+n;});
+    var st=rReal?parseFloat(rReal.valor):Math.max(0,(ini[n-1]||0)+ingS[n]+movEnt[n]-movSal[n]-(n===1?sojaConsum:0));
+    var cap=caps[n];
+    var pct=cap>0?Math.min(100,(st/cap)*100):0;
+    var bc=pct>85?'var(--red)':pct<15?'var(--red)':'var(--gold)';
+    var stl=pct>85?'<span style="color:var(--red)">⚠ Lleno</span>':pct<20?'<span style="color:var(--orange)">⚠ Bajo</span>':'<span style="color:var(--txl)">✓ OK</span>';
+    return '<div class="stcard" style="border-color:'+(n===1?'rgba(46,204,113,.3)':'var(--brd)')+'">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.3rem">'+
+        '<div class="stnm" style="font-size:.78rem">'+nombres[n-1]+(n===1?' <span style="font-size:.55rem;color:var(--grn)">[PROD]</span>':'')+'</div>'+
+        '<div class="stval" style="color:'+(n===1?'var(--grn)':'var(--gold)')+'">'+st.toFixed(1)+' t</div>'+
+      '</div>'+
+      '<div class="stbar"><div class="stfill" style="width:'+pct+'%;background:'+bc+'"></div></div>'+
+      '<div class="strow"><span>'+pct.toFixed(0)+'% de '+cap+' t</span>'+stl+'</div>'+
+    '</div>';
+  }).join('');
+}
+
+function afinaPct(){
+  var exts=analisis.filter(function(a){return a.extraccion>0;}).map(function(a){return a.extraccion/100;});
+  if(exts.length>=3) pctAce=exts.reduce(function(s,x){return s+x;},0)/exts.length;
+}
+
+// ═══ SILOS ═══
+function renderSilos(){
+  var c=document.getElementById('silo-grid');if(!c)return;
+  var ingPorSilo={1:0,2:0,3:0,4:0};
+  ingresos.filter(function(i){return i.estado==='autorizado'&&i.silo;}).forEach(function(i){
+    var n=parseInt((i.silo||'').replace(/\D/g,''))||0;
+    if(ingPorSilo[n]!==undefined) ingPorSilo[n]+=(i.kgBalanza||0)/1000;
+  });
+  // Movimientos entre silos
+  var movEnt={1:0,2:0,3:0,4:0},movSal={1:0,2:0,3:0,4:0};
+  movSilos.forEach(function(m){
+    var o=parseInt((m.siloOrigen||'').replace(/\D/g,''))||0;
+    var d=parseInt((m.siloDest||'').replace(/\D/g,''))||0;
+    if(movSal[o]!==undefined) movSal[o]+=(m.cantidad||0);
+    if(movEnt[d]!==undefined) movEnt[d]+=(m.cantidad||0);
+  });
+  var ini=[stockIni.s1,stockIni.s2,stockIni.s3,stockIni.s4];
+  // Soja consumida desde silo 1 (producción)
+  var kgAceProd=pasajes.reduce(function(s,p){return s+(p.kgAceiteTeorico||0);},0);
+  var sojaConsum=kgAceProd>0?(kgAceProd/pctAce)/1000:0;
+
+  var silos=[
+    {n:1,prod:true},{n:2,prod:false},{n:3,prod:false},{n:4,prod:false}
+  ];
+
+  c.innerHTML=silos.map(function(s){
+    var cap=cfg['capS'+s.n]||cfg.capSilo||750;
+    var tot=Math.max(0,ini[s.n-1]+ingPorSilo[s.n]+movEnt[s.n]-movSal[s.n]-(s.prod?sojaConsum:0));
+    var pct=Math.min(100,(tot/cap)*100);
+    var bc=pct<15?'var(--red)':pct<30?'var(--orange)':s.prod?'var(--grn)':'var(--gold)';
+    return '<div class="silo-card'+(s.prod?' silo-prod':'')+'">'+
+      (s.prod?'<span class="stag">PROD.</span>':'')+
+      '<div class="silo-nm">Silo '+s.n+'</div>'+
+      '<div style="font-size:.62rem;color:var(--txm)'+(s.prod?';color:var(--grn)':'')+'">'+( s.prod?'Producción':'Almacenaje')+'</div>'+
+      '<div class="silo-t">'+tot.toFixed(1)+' t</div>'+
+      '<div class="sbar"><div class="sfill" style="width:'+pct+'%;background:'+bc+'"></div></div>'+
+      '<div class="sinfo"><span>'+pct.toFixed(0)+'% de '+cap+'t</span><span style="font-size:.6rem">'+(pct>85?'⚠ Lleno':pct<15?'⚠ Bajo':'✓ OK')+'</span></div>'+
+    '</div>';
+  }).join('');
+}
+
+// ═══ SECADORA ═══
+function abrirSecadora(){
+  document.getElementById('m-ttl').textContent='Ingreso a Secadora';
+  document.getElementById('m-body').innerHTML=
+    '<p style="font-size:.76rem;color:var(--txm);margin-bottom:.7rem">Soja con hum. &gt;'+cfg.humMaxProd+'% pasa por secadora antes de ir al Silo 1 (producción). Cap: '+cfg.capSec+' t por carga.</p>'+
+    '<div class="sec"><div class="sttl">Datos del movimiento</div>'+
+    '<div class="fr"><div><label>Fecha</label><input type="date" id="sec-f" value="'+hoy()+'"/></div><div><label>Silo origen</label><select id="sec-orig"><option>Silo 2</option><option>Silo 3</option><option>Silo 4</option></select></div></div>'+
+    '<div class="fr"><div><label>Cantidad (t) máx '+cfg.capSec+'t</label><input type="number" step="0.1" id="sec-cant" placeholder="0"/></div><div></div></div>'+
+    '<div class="fr"><div><label>Hum. entrada (%)</label><input type="number" step="0.1" id="sec-hi" placeholder="12.5"/></div><div><label>Hum. salida (%)</label><input type="number" step="0.1" id="sec-ho" placeholder="9.0"/></div></div>'+
+    '<div class="fr"><div><label>Hora inicio</label><input type="time" id="sec-ini" value="'+horaActual()+'"/></div><div><label>Hora fin estimada</label><input type="time" id="sec-fin"/></div></div>'+
+    '<label>Observaciones</label><textarea id="sec-obs" placeholder="..."></textarea></div>'+
+    '<div style="font-size:.73rem;color:var(--txm);background:var(--goldp);border:1px solid rgba(245,200,66,.2);padding:.48rem .68rem;border-radius:7px;margin-bottom:.5rem">La soja secada pasa automáticamente al <strong style="color:var(--grn)">Silo 1 (Producción)</strong></div>'+
+    '<button class="bsave bsave-full" onclick="guardarSecadora()">Registrar secada</button>';
+  openM();
+}
+
+function guardarSecadora(){
+  var orig=gv('sec-orig'),cant=parseFloat(gv('sec-cant'));
+  if(!orig||!cant){toast('Completá los campos','err');return;}
+  if(cant>cfg.capSec){toast('Máximo '+cfg.capSec+' t por carga','err');return;}
+  var m={id:'SEC-'+ts6(),tipo:'secadora',fecha:gv('sec-f'),
+    siloOrigen:orig,siloDest:'Silo 1',cantidad:cant,
+    humEntrada:parseFloat(gv('sec-hi'))||0,humSalida:parseFloat(gv('sec-ho'))||0,
+    horaIni:gv('sec-ini'),horaFin:gv('sec-fin'),observaciones:gv('sec-obs'),
+    cargadoPor:window._user.nombre,tsn:Date.now()};
+  movSilos.unshift(m);sv('bio_mov_silos',movSilos);
+  toast('✅ Secada registrada — '+cant+'t de '+orig+' → Silo 1','ok');
+  closeM();renderSilos();renderMovSilos();
+}
+
+function abrirMovSilo(){
+  document.getElementById('m-ttl').textContent='Mover Soja entre Silos';
+  document.getElementById('m-body').innerHTML=
+    '<div class="sec"><div class="sttl">Movimiento directo</div>'+
+    '<label>Fecha</label><input type="date" id="ms-f" value="'+hoy()+'"/>'+
+    '<div class="fr"><div><label>Silo origen</label><select id="ms-orig"><option>Silo 1</option><option>Silo 2</option><option>Silo 3</option><option>Silo 4</option></select></div>'+
+    '<div><label>Silo destino</label><select id="ms-dest"><option>Silo 1</option><option>Silo 2</option><option>Silo 3</option><option>Silo 4</option></select></div></div>'+
+    '<label>Cantidad (t)</label><input type="number" step="0.1" id="ms-cant" placeholder="0"/>'+
+    '<label>Motivo</label><textarea id="ms-obs" placeholder="..."></textarea></div>'+
+    '<button class="bsave bsave-full" onclick="guardarMovSilo()">Registrar movimiento</button>';
+  openM();
+}
+
+function guardarMovSilo(){
+  var orig=gv('ms-orig'),dest=gv('ms-dest'),cant=parseFloat(gv('ms-cant'));
+  if(!cant||orig===dest){toast('Verificá los datos','err');return;}
+  var m={id:'MOV-'+ts6(),tipo:'movimiento',fecha:gv('ms-f'),
+    siloOrigen:orig,siloDest:dest,cantidad:cant,observaciones:gv('ms-obs'),
+    cargadoPor:window._user.nombre,tsn:Date.now()};
+  movSilos.unshift(m);sv('bio_mov_silos',movSilos);
+  toast('✅ Movimiento — '+cant+'t de '+orig+' → '+dest,'ok');
+  closeM();renderSilos();renderMovSilos();
+}
+
+function renderMovSilos(){
+  var c=document.getElementById('list-mov-silos');if(!c)return;
+  if(!movSilos.length){c.innerHTML='<div style="color:var(--txm);font-size:.76rem;padding:.5rem">Sin movimientos registrados</div>';return;}
+  c.innerHTML='<div class="twrap"><table><thead><tr><th>Fecha</th><th>Tipo</th><th>Origen</th><th>Destino</th><th>Cant.</th><th>H.in</th><th>H.out</th><th>Quién</th></tr></thead><tbody>'+
+    movSilos.slice(0,30).map(function(m){
+      return '<tr><td class="tm">'+m.fecha+'</td><td class="tm">'+(m.tipo==='secadora'?'🌡 Sec.':'↔ Mov.')+'</td>'+
+        '<td class="tc">'+esc(m.siloOrigen)+'</td><td class="tc">'+esc(m.siloDest)+'</td>'+
+        '<td class="tm" style="color:var(--gold)">'+m.cantidad+' t</td>'+
+        '<td class="tm">'+(m.humEntrada||'—')+'%</td><td class="tm" style="color:var(--grn)">'+(m.humSalida||'—')+'%</td>'+
+        '<td class="tm">'+esc(m.cargadoPor||'')+'</td></tr>';
+    }).join('')+'</tbody></table></div>';
+  // Status secadora
+  var last=movSilos.find(function(m){return m.tipo==='secadora';});
+  var sc=document.getElementById('sec-status');
+  if(sc) sc.innerHTML=last?
+    '<div style="font-size:.78rem;color:var(--txm)">Última secada: <strong style="color:var(--tx)">'+last.fecha+'</strong> · '+last.cantidad+' t · '+last.humEntrada+'% → '+last.humSalida+'%</div>':
+    '<div style="font-size:.76rem;color:var(--txl)">Sin secadas registradas</div>';
+}
+
+// ═══ INGRESO MP ═══
+function abrirIngreso(){
+  document.getElementById('m-ttl').textContent='Nuevo Ingreso de Soja';
+  document.getElementById('m-body').innerHTML=
+    '<div class="sec"><div class="sttl">Datos del camión</div>'+
+    '<label>Fecha</label><input type="date" id="i-f" value="'+hoy()+'"/>'+
+    '<label>Proveedor</label><select id="i-prov"><option value="">— Seleccioná —</option>'+proveedores.map(function(p){return '<option>'+esc(p)+'</option>';}).join('')+'</select>'+
+    '<label>Transportista</label><select id="i-trans"><option value="">— Seleccioná —</option>'+transportistas.map(function(t){return '<option>'+esc(t)+'</option>';}).join('')+'<option>Propio</option></select>'+
+    '<div class="fr"><div><label>Chofer</label><input id="i-chofer" placeholder="Nombre"/></div><div><label>Patente</label><input id="i-pat" placeholder="ABC 123"/></div></div></div>'+
+
+    '<div class="sec"><div class="sttl">Pesaje — Tara / Bruto / Neto</div>'+
+    '<div class="fr"><div><label>Tara (kg)</label><input type="number" id="i-tara" placeholder="0" oninput="calcNeto()"/></div>'+
+    '<div><label>Bruto (kg)</label><input type="number" id="i-bruto" placeholder="0" oninput="calcNeto()"/></div></div>'+
+    '<div class="fr" style="margin-top:.28rem">'+
+    '<div><label>Neto calculado (kg)</label><input type="number" id="i-neto" readonly style="color:var(--grn);font-family:var(--fmo);font-weight:700"/></div>'+
+    '<div><label>Kg según remito</label><input type="number" id="i-rem" placeholder="0" oninput="checkDif()"/></div></div>'+
+    '<div id="dif-box" style="display:none;margin-top:.4rem;padding:.45rem .68rem;border-radius:7px;font-size:.74rem;font-family:var(--fmo)"></div></div>'+
+
+    '<div class="sec"><div class="sttl">Análisis de calidad</div>'+
+    '<div class="fr"><div><label>Humedad (%)</label><input type="number" step="0.1" id="i-hum" placeholder="12.0" oninput="sugerirSilo()"/></div>'+
+    '<div><label>Aceite (%)</label><input type="number" step="0.1" id="i-ace" placeholder="20.0"/></div>'+
+    '<div><label>Proteína (%)</label><input type="number" step="0.1" id="i-prot" placeholder="34.0"/></div></div>'+
+    '<div id="silo-suger" style="display:none;margin-top:.4rem;padding:.45rem .68rem;border-radius:7px;font-size:.74rem;background:var(--grnp);border:1px solid rgba(46,204,113,.2)"></div>'+
+    '<label>Destino — Silo asignado</label>'+
+    '<select id="i-silo"><option value="Silo 1">Silo 1 — Producción</option><option value="Silo 2">Silo 2</option><option value="Silo 3">Silo 3</option><option value="Silo 4">Silo 4</option></select>'+
+    '<div style="margin-top:.65rem">'+
+    '<div class="togr"><span class="togl">Cuerpos extraños con descuento</span><label class="tog"><input type="checkbox" id="i-ce" onchange="togDesc()"><span class="togsl"></span></label></div>'+
+    '<div class="togr"><span class="togl">Granos dañados con descuento</span><label class="tog"><input type="checkbox" id="i-gd" onchange="togDesc()"><span class="togsl"></span></label></div>'+
+    '</div>'+
+    '<div id="desc-box" style="display:none;margin-top:.6rem">'+
+    '<div class="fr"><div><label>% descuento</label><input type="number" step="0.1" id="i-desc" placeholder="0.0"/></div><div><label>kg descontados</label><input type="number" id="i-desc-kg" placeholder="0"/></div></div>'+
+    '<label>Detalle</label><textarea id="i-acl" placeholder="..."></textarea></div></div>'+
+
+    '<button class="bsave bsave-full" onclick="guardarIngreso()">Registrar ingreso</button>';
+  openM();
+}
+
+function calcNeto(){
+  var t=parseFloat(gv('i-tara'))||0,b=parseFloat(gv('i-bruto'))||0;
+  document.getElementById('i-neto').value=b-t>0?(b-t).toFixed(0):'';
+  checkDif();
+}
+function checkDif(){
+  var n=parseFloat(gv('i-neto'))||0,r=parseFloat(gv('i-rem'))||0;
+  var d=Math.abs(n-r),box=document.getElementById('dif-box');
+  if(n>0&&r>0&&d>0){
+    box.style.display='block';
+    if(d>cfg.umbralDif){box.style.background='var(--redp)';box.style.color='var(--red)';box.style.border='1px solid var(--red)';box.innerHTML='⚠️ Dif. <strong>'+d.toFixed(0)+' kg</strong> — REQUIERE AUTORIZACIÓN del Gerente';}
+    else{box.style.background='var(--orangep)';box.style.color='var(--orange)';box.style.border='1px solid var(--orange)';box.innerHTML='Dif. '+d.toFixed(0)+' kg (≤'+cfg.umbralDif+' kg, aceptable)';}
+  }else box.style.display='none';
+}
+function sugerirSilo(){
+  var h=parseFloat(gv('i-hum'))||0,ss=document.getElementById('silo-suger'),sel=document.getElementById('i-silo');
+  if(h>0){
+    ss.style.display='block';
+    if(h<=cfg.humMaxProd){ss.style.background='var(--grnp)';ss.style.border='1px solid rgba(46,204,113,.2)';ss.style.color='var(--grn)';ss.innerHTML='✅ Hum. '+h+'% ≤ '+cfg.humMaxProd+'% → <strong>Silo 1 (Producción)</strong> directo';sel.value='Silo 1';}
+    else{ss.style.background='var(--orangep)';ss.style.border='1px solid var(--orange)';ss.style.color='var(--orange)';ss.innerHTML='⚠️ Hum. '+h+'% &gt; '+cfg.humMaxProd+'% → Asignar a <strong>Silo 2/3/4</strong> (precisa secado)';if(sel.value==='Silo 1')sel.value='Silo 2';}
+  }else ss.style.display='none';
+}
+function togDesc(){
+  var ce=document.getElementById('i-ce').checked,gd=document.getElementById('i-gd').checked;
+  document.getElementById('desc-box').style.display=(ce||gd)?'block':'none';
+}
+
+function guardarIngreso(){
+  var fecha=gv('i-f'),prov=gv('i-prov');
+  var tara=parseFloat(gv('i-tara'))||0,bruto=parseFloat(gv('i-bruto'))||0,neto=bruto-tara;
+  var rem=parseFloat(gv('i-rem'))||0,hum=parseFloat(gv('i-hum')),silo=gv('i-silo');
+  if(!fecha||!prov||!bruto||!hum||!silo){toast('Completá fecha, proveedor, pesaje y humedad','err');return;}
+  var dif=Math.abs(neto-rem);
+  var ce=document.getElementById('i-ce').checked,gd=document.getElementById('i-gd').checked;
+  var desc=parseFloat(gv('i-desc'))||0;
+  var reqAuth=(rem>0&&dif>cfg.umbralDif)||((ce||gd)&&desc>0);
+  var obj={
+    id:'ING-'+ts6(),numero:'ING-'+ts6(),fecha,proveedor:prov,
+    transportista:gv('i-trans'),chofer:gv('i-chofer'),patente:gv('i-pat'),
+    tara,bruto,kgBalanza:neto,kgRemito:rem,difKg:neto-rem,
+    humedad:hum,aceite:parseFloat(gv('i-ace'))||0,proteina:parseFloat(gv('i-prot'))||0,
+    silo,cuerposExtranos:ce,granosDanados:gd,descuento:desc,
+    descuentoKg:parseFloat(gv('i-desc-kg'))||0,aclaracion:gv('i-acl'),
+    estado:reqAuth?'pendiente_auth':'autorizado',
+    cargadoPor:window._user.nombre,tsn:Date.now()
+  };
+  ingresos.unshift(obj);sv('bio_ing',ingresos);
+  if(reqAuth){
+    var auth={id:'AUTH-'+ts6(),tipo:dif>cfg.umbralDif?'diferencia_kg':'descuento_calidad',
+      descripcion:dif>cfg.umbralDif?'Dif. '+dif.toFixed(0)+' kg (neto vs remito)':'Descuento '+desc+'% — '+(ce?'Cuerpos extraños ':'')+(gd?'Granos dañados':''),
+      ingresoId:obj.numero,proveedor:prov,kgNeto:neto,kgRem:rem,
+      estado:'pendiente',cargadoPor:window._user.nombre,tsn:Date.now()};
+    var allA=ls('bio_auth',[]);allA.push(auth);sv('bio_auth',allA);
+    autorizaciones.push(auth);updAuthBadge();renderAuth();
+    toast('⚠️ Ingreso creado — requiere autorización del Gerente','warn');
+  }else toast('✅ Ingreso registrado — '+neto.toLocaleString()+' kg → '+silo,'ok');
+  closeM();renderIngresos();calcStock();renderDash();
+}
+
+function renderIngresos(){
+  var c=document.getElementById('list-ingresos');if(!c)return;
+  var fp=(document.getElementById('fil-prov')||{}).value||'';
+  var fe=(document.getElementById('fil-est')||{}).value||'';
+  var canDel=window._user&&window._user.role==='gerente';
+  var d=ingresos.filter(function(i){
+    if(fp&&!i.proveedor.toLowerCase().includes(fp.toLowerCase()))return false;
+    if(fe&&i.estado!==fe)return false;
+    return true;
+  });
+  if(!d.length){c.innerHTML='<div style="color:var(--txm);font-size:.76rem;text-align:center;padding:2rem">Sin ingresos registrados</div>';return;}
+  c.innerHTML=d.slice(0,50).map(function(i){
+    var est=i.estado==='autorizado'?'<span class="badge bok">✓ OK</span>':'<span class="badge bredp">⏳ Auth</span>';
+    return '<div class="card">'+
+      '<div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:'+(i.estado==='autorizado'?'var(--grn)':'var(--red)')+'"></div>'+
+      (canDel?'<button onclick="eliminarRegistro(\'bio_ing\',\''+i.id+'\',ingresos,renderIngresos)" style="position:absolute;top:.45rem;right:.45rem;background:none;border:none;color:var(--txl);cursor:pointer;font-size:.85rem" title="Eliminar (solo Gerente)">✕</button>':'')+
+      '<div style="padding-left:.48rem;padding-right:'+(canDel?'1.6rem':'0')+'">'+
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start">'+
+        '<div><div class="cttl">'+esc(i.proveedor)+'</div><div class="csub">'+i.numero+' · '+i.fecha+(i.chofer?' · '+esc(i.chofer):'')+'</div></div>'+est+
+      '</div>'+
+      '<div class="cmeta">'+
+        '<span class="cm">Neto: '+(i.kgBalanza||0).toLocaleString()+' kg</span>'+
+        (i.tara?'<span class="cm">T:'+i.tara.toLocaleString()+' B:'+i.bruto.toLocaleString()+'</span>':'')+
+        (i.kgRemito?'<span class="cm" style="'+(Math.abs(i.difKg||0)>cfg.umbralDif?'color:var(--red)':'')+'">Rem:'+i.kgRemito.toLocaleString()+'</span>':'')+
+        '<span class="cm" style="color:var(--grn)">H:'+i.humedad+'% A:'+i.aceite+'% P:'+i.proteina+'%</span>'+
+        (i.silo?'<span class="cm" style="color:var(--gold)">→ '+esc(i.silo)+'</span>':'')+
+      '</div></div></div>';
+  }).join('');
+}
+
+// ═══ ARRANQUE / PARADA ═══
+function abrirArranqueParada(){
+  var u=window._user;
+  if(u.role!=='jefe'&&u.role!=='gerente'&&u.role!=='admin'){toast('Solo Jefe de Planta o Gerente','err');return;}
+  var l1=lineas.L1.activa,l2=lineas.L2.activa;
+  document.getElementById('m-ttl').textContent='Arranque / Parada de Línea';
+  document.getElementById('m-body').innerHTML=
+    '<div class="sec"><div class="sttl">Estado actual</div><div class="fr">'+
+    '<div class="lst"><span class="lnm">L1</span><span class="lbadge '+(l1?'lon':'loff')+'">'+(l1?'● MARCHA':'● DETENIDA')+'</span></div>'+
+    '<div class="lst"><span class="lnm">L2</span><span class="lbadge '+(l2?'lon':'loff')+'">'+(l2?'● MARCHA':'● DETENIDA')+'</span></div>'+
+    '</div></div>'+
+    '<div class="sec"><div class="sttl">Registrar evento</div>'+
+    '<div class="fr">'+
+    '<div><label>Línea</label><select id="ap-lin"><option value="L1">Línea 1</option><option value="L2">Línea 2</option><option value="ambas">Ambas</option></select></div>'+
+    '<div><label>Evento</label><select id="ap-tipo" onchange="togMot()"><option value="arranque">▶ Arranque</option><option value="parada">■ Parada</option></select></div>'+
+    '</div>'+
+    '<div id="ap-mot-box" style="display:none;margin-top:.45rem">'+
+    '<label>Motivo de parada</label>'+
+    '<select id="ap-mot" onchange="togOtro()"><option>Fin de semana</option><option>Rotura mecánica</option><option>Reparación</option><option>Falta materia prima</option><option>Mantenimiento preventivo</option><option value="_otro">Otro...</option></select>'+
+    '<textarea id="ap-mot-txt" style="display:none;margin-top:.32rem" placeholder="Describir motivo..."></textarea>'+
+    '</div>'+
+    '<div class="fr" style="margin-top:.48rem"><div><label>Fecha</label><input type="date" id="ap-f" value="'+hoy()+'"/></div><div><label>Hora</label><input type="time" id="ap-h" value="'+horaActual()+'"/></div></div></div>'+
+    '<button class="bsave bsave-full" onclick="guardarAP()">Registrar evento</button>';
+  openM();
+}
+function togMot(){document.getElementById('ap-mot-box').style.display=gv('ap-tipo')==='parada'?'block':'none';}
+function togOtro(){document.getElementById('ap-mot-txt').style.display=gv('ap-mot')==='_otro'?'block':'none';}
+
+function guardarAP(){
+  var linea=gv('ap-lin'),tipo=gv('ap-tipo');
+  if(!linea||!tipo){toast('Completá los campos','err');return;}
+  var motivo=tipo==='parada'?(gv('ap-mot')==='_otro'?gv('ap-mot-txt'):gv('ap-mot')):'';
+  if(linea==='ambas'){lineas.L1.activa=tipo==='arranque';lineas.L2.activa=tipo==='arranque';}
+  else{lineas[linea].activa=tipo==='arranque';}
+  sv('bio_lineas',lineas);
+  // Guardar en historial arranques
+  var arr=ls('bio_arr',[]);
+  arr.unshift({id:'AP-'+ts6(),linea,tipo,motivo,fecha:gv('ap-f'),hora:gv('ap-h'),cargadoPor:window._user.nombre,tsn:Date.now()});
+  sv('bio_arr',arr);
+  toast((tipo==='arranque'?'✅ Arranque':'⛔ Parada')+' registrado — '+linea,'ok');
+  closeM();renderLineasEstado();
+}
+
+function renderLineasEstado(){
+  var l1=lineas.L1.activa,l2=lineas.L2.activa;
+  var upd=function(id,on){var e=document.getElementById(id);if(!e)return;e.className='lbadge '+(on?'lon':'loff');e.textContent=on?'● MARCHA':'● DETENIDA';};
+  upd('ls-l1',l1);upd('ls-l2',l2);
+  var cp=document.getElementById('lineas-prod');if(!cp)return;
+  var arr=ls('bio_arr',[]);
+  cp.innerHTML='<div class="fr" style="margin-bottom:.55rem">'+
+    '<div class="lst"><span class="lnm">Línea 1</span><span class="lbadge '+(l1?'lon':'loff')+'">'+(l1?'● MARCHA':'● DETENIDA')+'</span></div>'+
+    '<div class="lst"><span class="lnm">Línea 2</span><span class="lbadge '+(l2?'lon':'loff')+'">'+(l2?'● MARCHA':'● DETENIDA')+'</span></div>'+
+    '</div>'+
+    (arr.length?'<div style="font-family:var(--fmo);font-size:.6rem;color:var(--txm);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.32rem">Últimos eventos</div>'+
+    arr.slice(0,5).map(function(e){
+      return '<div style="display:flex;gap:.45rem;padding:.3rem 0;border-bottom:1px solid var(--brd);font-size:.76rem">'+
+        '<span style="color:'+(e.tipo==='arranque'?'var(--grn)':'var(--red)')+'">'+( e.tipo==='arranque'?'▶':'■')+'</span>'+
+        '<span style="color:var(--tx)">'+esc(e.linea)+'</span>'+
+        '<span style="color:var(--txm)">'+e.fecha+' '+e.hora+'</span>'+
+        (e.motivo?'<span style="color:var(--orange);font-size:.7rem">'+esc(e.motivo)+'</span>':'')+
+        '<span style="color:var(--txl);margin-left:auto;font-size:.68rem">'+esc(e.cargadoPor||'')+'</span>'+
+      '</div>';
+    }).join(''):'<div style="color:var(--txl);font-size:.76rem">Sin eventos registrados</div>');
+}
+
+// ═══ TURNO ═══
+function abrirTurno(){
+  document.getElementById('m-ttl').textContent='Registrar Turno de Producción';
+  document.getElementById('m-body').innerHTML=
+    '<div class="sec"><div class="sttl">Identificación del turno</div>'+
+    '<div class="fr"><div><label>Fecha</label><input type="date" id="t-f" value="'+hoy()+'"/></div>'+
+    '<div><label>N° Turno</label><select id="t-num"><option value="1">T1</option><option value="2">T2</option><option value="3">T3</option></select></div></div>'+
+    '<div class="fr"><div><label>Hora inicio</label><input type="time" id="t-hi" value="'+horaActual()+'"/></div>'+
+    '<div><label>Hora fin</label><input type="time" id="t-hf"/></div></div>'+
+    '<label>Responsable de turno</label><select id="t-resp"><option>Carlos Nuñez</option><option>Victor Nuñez</option><option>Rafael Ramirez</option></select></div>'+
+    '<div class="sec"><div class="sttl">Líneas activas</div>'+
+    '<div class="togr"><span class="togl">Línea 1 activa</span><label class="tog"><input type="checkbox" id="t-l1" checked><span class="togsl"></span></label></div>'+
+    '<div class="togr"><span class="togl">Línea 2 activa</span><label class="tog"><input type="checkbox" id="t-l2" checked><span class="togsl"></span></label></div></div>'+
+    '<div class="sec"><div class="sttl">Horas y paradas</div>'+
+    '<div class="fr"><div><label>Hs producción</label><input type="number" step="0.5" id="t-hsp" value="8"/></div>'+
+    '<div><label>Hs de parada</label><input type="number" step="0.5" id="t-hspar" value="0" oninput="calcHsNetas()"/></div></div>'+
+    '<div id="t-netas" style="font-family:var(--fmo);font-size:.76rem;color:var(--grn);margin-top:.35rem">Hs netas: 8h</div>'+
+    '<div class="togr" style="margin-top:.5rem"><span class="togl">Hubo parada en este turno</span><label class="tog"><input type="checkbox" id="t-par" onchange="togParada()"><span class="togsl"></span></label></div>'+
+    '<div id="t-par-box" style="display:none;margin-top:.48rem">'+
+    '<div class="fr"><div><label>Línea afectada</label><select id="t-lin-par"><option>Línea 1</option><option>Línea 2</option><option>Ambas</option></select></div></div>'+
+    '<label>Motivo</label><textarea id="t-motivo" placeholder="Describir motivo..."></textarea></div></div>'+
+    '<div class="sec"><div class="sttl">Destino del expeller</div>'+
+    '<div class="fr"><div><label>Expeller L1 → Tolva</label><select id="t-tolva-l1"><option value="">— Sin producción —</option><option value="Tolva 1">Tolva 1</option><option value="Tolva 2">Tolva 2</option></select></div>'+
+    '<div><label>Expeller L2 → Tolva</label><select id="t-tolva-l2"><option value="">— Sin producción —</option><option value="Tolva 1">Tolva 1</option><option value="Tolva 2">Tolva 2</option></select></div></div></div>'+
+    '<button class="bsave bsave-full" onclick="guardarTurno()">Registrar turno</button>';
+  openM();
+}
+function calcHsNetas(){var hsp=parseFloat(gv('t-hsp'))||8,hspar=parseFloat(gv('t-hspar'))||0;var e=document.getElementById('t-netas');if(e)e.textContent='Hs netas: '+(hsp-hspar)+'h';}
+function togParada(){document.getElementById('t-par-box').style.display=document.getElementById('t-par').checked?'block':'none';}
+
+function guardarTurno(){
+  var fecha=gv('t-f'),resp=gv('t-resp'),num=gv('t-num'),hi=gv('t-hi'),hf=gv('t-hf');
+  if(!fecha||!resp||!hi){toast('Completá fecha, hora de inicio y responsable','err');return;}
+  var hsProd=parseFloat(gv('t-hsp'))||8,hsParada=parseFloat(gv('t-hspar'))||0;
+  var obj={id:'TUR-'+ts6(),numero:'TUR-'+ts6(),fecha,turno:num,horaInicio:hi,horaFin:hf,responsable:resp,
+    linea1:document.getElementById('t-l1').checked,linea2:document.getElementById('t-l2').checked,
+    tolvaL1:gv('t-tolva-l1'),tolvaL2:gv('t-tolva-l2'),
+    hsProd,hsParada,hsNetas:hsProd-hsParada,
+    huboParada:document.getElementById('t-par').checked,
+    lineaParada:gv('t-lin-par'),motivoParada:gv('t-motivo'),
+    cargadoPor:window._user.nombre,tsn:Date.now()};
+  turnos.unshift(obj);sv('bio_tur',turnos);
+  toast('✅ Turno registrado','ok');closeM();renderTurnos();
+}
+
+function renderTurnos(){
+  var c=document.getElementById('list-turnos');if(!c)return;
+  if(!turnos.length){c.innerHTML='<div style="color:var(--txm);font-size:.76rem;text-align:center;padding:1.5rem">Sin turnos registrados</div>';return;}
+  var canDel=window._user&&window._user.role==='gerente';
+  c.innerHTML=turnos.slice(0,20).map(function(t){
+    var lins=[t.linea1?'L1':'',t.linea2?'L2':''].filter(Boolean).join('+');
+    var horario=(t.horaInicio||'')+(t.horaFin?' → '+t.horaFin:'');
+    var tolvas=[t.tolvaL1?'L1→'+t.tolvaL1:'',t.tolvaL2?'L2→'+t.tolvaL2:''].filter(Boolean).join(' / ');
+    return '<div class="card">'+
+      '<div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--blue)"></div>'+
+      (canDel?'<button onclick="eliminarRegistro(\'bio_tur\',\''+t.id+'\',turnos,renderTurnos)" style="position:absolute;top:.45rem;right:.5rem;background:none;border:none;color:var(--txl);cursor:pointer;font-size:.9rem" title="Eliminar (solo Gerente)">✕</button>':'')+
+      '<div style="padding-left:.48rem;padding-right:'+(canDel?'1.8rem':'0')+'">'+
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start">'+
+        '<div><div class="cttl">'+esc(t.responsable)+' <span style="color:var(--txm);font-size:.75rem;font-weight:400">· T'+esc(t.turno||'')+'</span></div>'+
+        '<div class="csub">'+t.numero+' · '+t.fecha+(horario?' · '+horario:'')+'</div></div>'+
+        '<span class="badge bblue">'+lins+'</span>'+
+      '</div>'+
+      '<div class="cmeta">'+
+        (tolvas?'<span class="cm" style="color:var(--gold)">'+esc(tolvas)+'</span>':'')+
+        '<span class="cm">Hs netas: '+t.hsNetas+'h</span>'+
+        (t.huboParada?'<span class="cm" style="color:var(--red)">⚠ Parada '+t.hsParada+'h</span>':'<span class="cm" style="color:var(--grn)">✓ Sin paradas</span>')+
+      '</div>'+
+      (t.motivoParada?'<div style="font-size:.72rem;color:var(--txm);margin-top:.22rem;font-style:italic">'+esc(t.motivoParada)+'</div>':'')+
+      '</div></div>';
+  }).join('');
+}
+
+// ═══ PASAJE ACEITE ═══
+function abrirPasaje(){
+  document.getElementById('m-ttl').textContent='Pasaje Aceite — Tanquecito → Tanque';
+  document.getElementById('m-body').innerHTML=
+    '<p style="font-size:.76rem;color:var(--txm);margin-bottom:.68rem">Se registra al inicio de cada turno. Fórmula: litros_reales = visor ÷ 7 × 8 → kg = litros × 0.91</p>'+
+    '<div class="sec"><div class="sttl">Datos</div>'+
+    '<div class="fr"><div><label>Fecha</label><input type="date" id="p-f" value="'+hoy()+'"/></div><div><label>Hora</label><input type="time" id="p-h" value="'+horaActual()+'"/></div></div>'+
+    '<label>Lectura del visor (litros)</label><input type="number" step="1" id="p-visor" placeholder="0" oninput="calcPasaje()"/>'+
+    '<div class="cbox" id="p-calc" style="display:none">'+
+    '<div class="clbl">Resultado</div>'+
+    '<div class="crow" id="p-det"></div>'+
+    '<div style="font-family:var(--fc);font-size:1.1rem;font-weight:800;color:var(--gold);margin-top:.28rem" id="p-res"></div>'+
+    '</div></div>'+
+    '<label>Observaciones</label><textarea id="p-obs" placeholder="..."></textarea>'+
+    '<button class="bsave bsave-full" onclick="guardarPasaje()">Registrar pasaje</button>';
+  openM();
+}
+function calcPasaje(){
+  var visor=parseFloat(gv('p-visor'))||0,box=document.getElementById('p-calc');
+  if(visor>0){
+    box.style.display='block';
+    var lR=(visor/7.5)*8,kg=lR*0.91;
+    document.getElementById('p-det').textContent='('+visor+' ÷ 7.5) × 8 = '+lR.toFixed(1)+' L → × 0.91';
+    document.getElementById('p-res').textContent=kg.toFixed(1)+' kg teóricos de aceite';
+  }else box.style.display='none';
+}
+function togDescAce(){document.getElementById('p-desc-box').style.display=document.getElementById('p-desc').checked?'block':'none';}
+
+function guardarPasaje(){
+  var visor=parseFloat(gv('p-visor'));
+  if(!visor){toast('Ingresá la lectura del visor','err');return;}
+  var lR=(visor/7.5)*8,kgTeo=lR*0.91;
+  var obj={id:'PAS-'+ts6(),fecha:gv('p-f'),hora:gv('p-h'),
+    visor,litrosReal:lR,kgAceiteTeorico:kgTeo,
+    observaciones:gv('p-obs'),
+    cargadoPor:window._user.nombre,tsn:Date.now()};
+  pasajes.unshift(obj);sv('bio_pasajes',pasajes);
+  toast('✅ Pasaje registrado — '+kgTeo.toFixed(1)+' kg teóricos','ok');
+  closeM();renderPasajes();calcStock();
+}
+
+function renderPasajes(){
+  var c=document.getElementById('list-pasajes');if(!c)return;
+  if(!pasajes.length){c.innerHTML='<div style="color:var(--txm);font-size:.76rem;padding:.45rem">Sin pasajes registrados</div>';return;}
+  var canDel=window._user&&window._user.role==='gerente';
+  c.innerHTML='<div class="twrap"><table><thead><tr><th>Fecha</th><th>Hora</th><th>Visor</th><th>Litros</th><th>Kg teóricos</th><th>Quién</th>'+(canDel?'<th></th>':'')+'</tr></thead><tbody>'+
+    pasajes.slice(0,25).map(function(p){
+      return '<tr><td class="tm">'+p.fecha+'</td><td class="tm">'+p.hora+'</td><td class="tm">'+p.visor+'</td>'+
+        '<td class="tm">'+(p.litrosReal||0).toFixed(1)+'</td>'+
+        '<td class="tm" style="color:var(--gold)">'+(p.kgAceiteTeorico||0).toFixed(1)+'</td>'+
+        '<td class="tm">'+esc(p.cargadoPor||'')+'</td>'+
+        (canDel?'<td><button onclick="eliminarRegistro(\'bio_pasajes\',\''+p.id+'\',pasajes,renderPasajes)" style="background:none;border:none;color:var(--txl);cursor:pointer;font-size:.8rem">✕</button></td>':'')+
+      '</tr>';
+    }).join('')+'</tbody></table></div>';
+}
+
+// ═══ ANÁLISIS NIRS ═══
+function abrirAnalisis(){
+  document.getElementById('m-ttl').textContent='Nuevo Análisis de Proceso';
+  document.getElementById('m-body').innerHTML=
+    '<div class="sec"><div class="sttl">Identificación</div>'+
+    '<div class="fr"><div><label>Fecha</label><input type="date" id="a-f" value="'+hoy()+'"/></div><div><label>Hora</label><input type="time" id="a-h" value="'+horaActual()+'"/></div></div>'+
+    '<label>Responsable de turno</label><select id="a-resp"><option>Carlos Nuñez</option><option>Victor Nuñez</option><option>Rafael Ramirez</option></select></div>'+
+
+    '<div class="sec"><div class="sttl">📷 Imagen NIRS (SCIO) — opcional</div>'+
+    '<div class="nirsbox" onclick="document.getElementById(\'nirs-in\').click()">'+
+    '<input type="file" id="nirs-in" accept="image/*" style="display:none" onchange="procesarNIRS(this)"/>'+
+    '<div style="font-size:1.6rem;margin-bottom:.28rem">📸</div>'+
+    '<div style="font-size:.76rem;color:var(--txm)">Tocá para subir la foto del NIRS<br><span style="font-size:.68rem;color:var(--txl)">El sistema lee Humedad, Proteína y Aceite automáticamente</span></div>'+
+    '</div>'+
+    '<div class="nirsload" id="nirs-load">⏳ Leyendo imagen con IA...</div>'+
+    '<div class="nirsres" id="nirs-res">'+
+    '<div style="font-family:var(--fmo);font-size:.6rem;color:var(--grn);letter-spacing:.8px;margin-bottom:.45rem">✅ VALORES DETECTADOS — CONFIRMÁ O EDITÁ</div>'+
+    '<div class="fr"><div><label>Aceite (%)</label><input type="number" step="0.1" id="nirs-ace"/></div>'+
+    '<div><label>Proteína (%)</label><input type="number" step="0.1" id="nirs-prot"/></div>'+
+    '<div><label>Humedad (%)</label><input type="number" step="0.1" id="nirs-hum"/></div></div>'+
+    '<div style="font-size:.7rem;color:var(--txm);margin-top:.35rem" id="nirs-disp"></div>'+
+    '<button class="bsm bsg" style="margin-top:.45rem" onclick="usarNIRS()">Usar estos valores →</button></div></div>'+
+
+    '<div class="sec"><div class="sttl">Soja — entrada a producción</div>'+
+    '<div class="fr"><div><label>Humedad (%)</label><input type="number" step="0.1" id="a-sh" placeholder="9.5"/></div>'+
+    '<div><label>Aceite (%)</label><input type="number" step="0.1" id="a-sa" placeholder="20.0"/></div>'+
+    '<div><label>Proteína (%)</label><input type="number" step="0.1" id="a-sp" placeholder="34.0"/></div></div>'+
+    '</div>'+
+
+    '<div class="sec"><div class="sttl">Expeller — Línea 1</div>'+
+    '<div class="fr"><div><label>Humedad (%)</label><input type="number" step="0.1" id="a-l1h" placeholder="6.0"/></div>'+
+    '<div><label>Aceite (%)</label><input type="number" step="0.1" id="a-l1a" placeholder="9.0"/></div>'+
+    '<div><label>Proteína (%)</label><input type="number" step="0.1" id="a-l1p" placeholder="45.0"/></div></div>'+
+    '<label>Temperatura extrusor L1 (°C)</label><input type="number" step="0.5" id="a-l1t" placeholder="155" oninput="alertaTemp(this,\'l1\')"/>'+
+    '<div id="alrt-l1" style="display:none;font-size:.72rem;margin-top:.22rem;padding:.32rem .58rem;border-radius:6px;font-family:var(--fmo)"></div></div>'+
+
+    '<div class="sec"><div class="sttl">Expeller — Línea 2</div>'+
+    '<div class="fr"><div><label>Humedad (%)</label><input type="number" step="0.1" id="a-l2h" placeholder="5.0"/></div>'+
+    '<div><label>Aceite (%)</label><input type="number" step="0.1" id="a-l2a" placeholder="8.0"/></div>'+
+    '<div><label>Proteína (%)</label><input type="number" step="0.1" id="a-l2p" placeholder="45.0"/></div></div>'+
+    '<label>Temperatura extrusor L2 (°C)</label><input type="number" step="0.5" id="a-l2t" placeholder="155" oninput="alertaTemp(this,\'l2\')"/>'+
+    '<div id="alrt-l2" style="display:none;font-size:.72rem;margin-top:.22rem;padding:.32rem .58rem;border-radius:6px;font-family:var(--fmo)"></div></div>'+
+
+    '<div class="sec"><div class="sttl">Expeller final — salida enfriador</div>'+
+    '<div class="fr"><div><label>Humedad (%)</label><input type="number" step="0.1" id="a-efh" placeholder="7.5"/></div>'+
+    '<div><label>Aceite (%)</label><input type="number" step="0.1" id="a-efa" placeholder="8.0"/></div>'+
+    '<div><label>Proteína (%)</label><input type="number" step="0.1" id="a-efp" placeholder="45.0"/></div></div></div>'+
+
+    '<button class="bsm bsb" style="margin-bottom:.55rem" onclick="calcAnl()">Calcular indicadores</button>'+
+    '<div id="a-calc" class="cbox" style="display:none"><div class="clbl">Cálculos automáticos</div><div id="a-calc-det"></div></div>'+
+    '<button class="bsave bsave-full" onclick="guardarAnalisis()">Guardar análisis</button>';
+  openM();
+}
+
+function alertaTemp(el,ln){
+  var v=parseFloat(el.value)||0,box=document.getElementById('alrt-'+ln);
+  if(v>0&&box){
+    box.style.display='block';
+    if(v>165){box.style.background='var(--redp)';box.style.color='var(--red)';box.style.border='1px solid var(--red)';box.textContent='⚠️ Temp. muy alta ('+v+'°C > 165°C) — revisar prensa';}
+    else if(v>155){box.style.background='var(--orangep)';box.style.color='var(--orange)';box.style.border='1px solid var(--orange)';box.textContent='Temp. alta ('+v+'°C) — monitorear';}
+    else{box.style.background='var(--grnp)';box.style.color='var(--grn)';box.style.border='1px solid rgba(46,204,113,.2)';box.textContent='Temp. normal ('+v+'°C)';}
+  }else if(box) box.style.display='none';
+}
+
+function procesarNIRS(inp){
+  if(!inp.files||!inp.files[0])return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    document.getElementById('nirs-load').classList.add('show');
+    document.getElementById('nirs-res').classList.remove('show');
+    var b64=e.target.result.split(',')[1],mt=inp.files[0].type||'image/jpeg';
+    fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:300,
+        messages:[{role:'user',content:[
+          {type:'image',source:{type:'base64',media_type:mt,data:b64}},
+          {type:'text',text:'Imagen del analizador NIRS SCIO. Extraé exactamente los valores numéricos de Aceite (%), Proteína (%) y Humedad (%). Respondé SOLO con JSON: {"aceite":8.9,"proteina":44.0,"humedad":9.3,"dispositivo":"CDFGMTNGFP"}. Sin texto extra.'}
+        ]}]})
+    }).then(function(r){return r.json();}).then(function(d){
+      try{
+        var txt=d.content[0].text.trim().replace(/```json|```/g,'').trim();
+        var p=JSON.parse(txt);
+        document.getElementById('nirs-load').classList.remove('show');
+        document.getElementById('nirs-res').classList.add('show');
+        document.getElementById('nirs-ace').value=p.aceite||'';
+        document.getElementById('nirs-prot').value=p.proteina||'';
+        document.getElementById('nirs-hum').value=p.humedad||'';
+        if(p.dispositivo)document.getElementById('nirs-disp').textContent='Dispositivo: '+p.dispositivo;
+      }catch(e2){document.getElementById('nirs-load').classList.remove('show');toast('No se pudo leer la imagen — cargá manualmente','err');}
+    }).catch(function(){document.getElementById('nirs-load').classList.remove('show');toast('Sin conexión para leer NIRS — cargá manualmente','warn');});
+  };
+  reader.readAsDataURL(inp.files[0]);
+}
+
+function usarNIRS(){
+  var a=gv('nirs-ace'),p=gv('nirs-prot'),h=gv('nirs-hum');
+  if(a)document.getElementById('a-efa').value=a;
+  if(p)document.getElementById('a-efp').value=p;
+  if(h)document.getElementById('a-efh').value=h;
+  toast('✅ Valores NIRS cargados en expeller final','ok');
+  calcAnl();
+}
+
+function calcAnl(){
+  var sh=parseFloat(gv('a-sh'))||0,sa=parseFloat(gv('a-sa'))||0;
+  var l1h=parseFloat(gv('a-l1h'))||0,l2h=parseFloat(gv('a-l2h'))||0;
+  var efh=parseFloat(gv('a-efh'))||0,efa=parseFloat(gv('a-efa'))||0;
+  var box=document.getElementById('a-calc');
+  if(!sh||!efh){return;}
+  var perd=sh-(efh*0.83),prom=(l1h+l2h)/2,recup=prom>0?prom-efh:0,ext=sa>0?sa-efa:0;
+  box.style.display='block';
+  document.getElementById('a-calc-det').innerHTML=
+    '<div class="crow">Pérd. proceso: <strong style="color:var(--red)">'+perd.toFixed(2)+'%</strong> → '+sh+' − ('+efh+' × 0.83)</div>'+
+    (prom>0?'<div class="crow">Recuperación inyección: <strong style="color:var(--grn)">'+recup.toFixed(2)+'%</strong></div>':'')+
+    (ext>0?'<div class="crow">Extracción aceite: <strong style="color:var(--gold)">'+ext.toFixed(2)+'%</strong> → ('+sa+' − '+efa+')</div>':'');
+}
+
+function guardarAnalisis(){
+  var fecha=gv('a-f'),resp=gv('a-resp');
+  var sh=parseFloat(gv('a-sh')),efh=parseFloat(gv('a-efh'));
+  if(!fecha||!sh||!efh){toast('Completá al menos humedad soja y expeller final','err');return;}
+  var sa=parseFloat(gv('a-sa'))||0,l1h=parseFloat(gv('a-l1h'))||0,l2h=parseFloat(gv('a-l2h'))||0;
+  var efa=parseFloat(gv('a-efa'))||0,efp=parseFloat(gv('a-efp'))||0;
+  var prom=(l1h+l2h)/2;
+  var obj={id:'ANL-'+ts6(),numero:'ANL-'+ts6(),fecha,hora:gv('a-h'),responsable:resp,
+    soja:{humedad:sh,aceite:sa,proteina:parseFloat(gv('a-sp'))||0},
+    linea1:{humedad:l1h,aceite:parseFloat(gv('a-l1a'))||0,proteina:parseFloat(gv('a-l1p'))||0,temperatura:parseFloat(gv('a-l1t'))||0},
+    linea2:{humedad:l2h,aceite:parseFloat(gv('a-l2a'))||0,proteina:parseFloat(gv('a-l2p'))||0},
+    final:{humedad:efh,aceite:efa,proteina:efp},
+    perdProceso:sh-(efh*0.83),
+    recuperacion:prom>0?prom-efh:0,
+    extraccion:sa>0?sa-efa:0,
+    cargadoPor:window._user.nombre,tsn:Date.now()};
+  analisis.unshift(obj);sv('bio_anal',analisis);
+  afinaPct();
+  toast('✅ Análisis guardado','ok');closeM();renderAnalisis();updKpis();renderDash();
+}
+
+function renderAnalisis(){
+  var c=document.getElementById('list-analisis');if(!c)return;
+  if(!analisis.length){c.innerHTML='<div style="color:var(--txm);font-size:.76rem;text-align:center;padding:2rem">Sin análisis registrados</div>';return;}
+  c.innerHTML=analisis.slice(0,30).map(function(a){
+    var ext=(a.extraccion||0).toFixed(2);
+    var ec=parseFloat(ext)>=pctAce*100*0.95?'var(--grn)':parseFloat(ext)>=pctAce*100*0.85?'var(--orange)':'var(--red)';
+    var tl1=a.linea1&&a.linea1.temperatura?a.linea1.temperatura:0;
+    var tc=tl1>165?'var(--red)':tl1>155?'var(--orange)':'var(--grn)';
+    var canDel=window._user&&window._user.role==='gerente';
+    return '<div class="card">'+
+      '<div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--purple,#ce93d8)"></div>'+
+      (canDel?'<button onclick="eliminarRegistro(\'analisis\',\''+a.id+'\')" style="position:absolute;top:.45rem;right:.45rem;background:none;border:none;color:var(--txl);cursor:pointer;font-size:.85rem" title="Eliminar (solo Gerente)">✕</button>':'')+
+      '<div style="padding-left:.48rem;padding-right:'+(canDel?'1.6rem':'0')+'">'+
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start">'+
+        '<div><div class="cttl">'+a.fecha+' '+a.hora+' · '+esc(a.responsable||'')+'</div><div class="csub">'+a.numero+'</div></div>'+
+        '<div style="text-align:right"><div style="font-family:var(--fc);font-size:.98rem;font-weight:800;color:'+ec+'">'+ext+'%</div><div style="font-size:.58rem;color:var(--txm)">extracción</div></div>'+
+      '</div>'+
+      '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.32rem;margin-top:.45rem">'+
+        '<div style="background:var(--bg3);border:1px solid var(--brd);border-radius:7px;padding:.4rem;text-align:center"><div style="font-family:var(--fmo);font-size:.9rem;font-weight:600;color:var(--tx)">'+(a.soja?a.soja.humedad:0)+'%</div><div style="font-size:.58rem;color:var(--txm);text-transform:uppercase">Hum soja</div></div>'+
+        '<div style="background:var(--bg3);border:1px solid var(--brd);border-radius:7px;padding:.4rem;text-align:center"><div style="font-family:var(--fmo);font-size:.9rem;font-weight:600;color:var(--grn)">'+(a.final?a.final.proteina:0)+'%</div><div style="font-size:.58rem;color:var(--txm);text-transform:uppercase">Prot final</div></div>'+
+        '<div style="background:var(--bg3);border:1px solid var(--brd);border-radius:7px;padding:.4rem;text-align:center"><div style="font-family:var(--fmo);font-size:.9rem;font-weight:600;color:'+tc+'">'+(tl1?tl1+'°':'—')+'</div><div style="font-size:.58rem;color:var(--txm);text-transform:uppercase">Temp extrusor</div></div>'+
+        '<div style="background:var(--bg3);border:1px solid var(--brd);border-radius:7px;padding:.4rem;text-align:center"><div style="font-family:var(--fmo);font-size:.9rem;font-weight:600;color:var(--red)">'+(a.perdProceso||0).toFixed(1)+'%</div><div style="font-size:.58rem;color:var(--txm);text-transform:uppercase">Pérd proc</div></div>'+
+      '</div></div></div>';
+  }).join('');
+}
+
+// ═══ STOCK REAL ═══
+function abrirReal(){
+  var u=window._user;
+  if(u.role!=='gerente'&&u.role!=='admin'){toast('Solo el Gerente puede cargar stock real','err');return;}
+  document.getElementById('m-ttl').textContent='Carga de Stock Real';
+  document.getElementById('m-body').innerHTML=
+    '<p style="font-size:.76rem;color:var(--txm);margin-bottom:.7rem">Cargar cuando vaciás un silo, tolva o tanque y medís el stock real exacto. Este valor ajusta el modelo teórico.</p>'+
+    '<div class="sec"><div class="sttl">Medición real</div>'+
+    '<label>Depósito medido</label>'+
+    '<select id="r-prod">'+
+    '<option value="soja_total">Soja — Total silos</option>'+
+    '<option value="silo1">Silo 1 (Producción)</option>'+
+    '<option value="silo2">Silo 2</option>'+
+    '<option value="silo3">Silo 3</option>'+
+    '<option value="silo4">Silo 4</option>'+
+    '<option value="aceite">Aceite — Tanque</option>'+
+    '<option value="tolva1">Expeller — Tolva 1</option>'+
+    '<option value="tolva2">Expeller — Tolva 2</option>'+
+    '</select>'+
+    '<label>Stock real medido (toneladas)</label><input type="number" step="0.01" id="r-val" placeholder="0.0"/>'+
+    '<div class="fr"><div><label>Fecha de medición</label><input type="date" id="r-f" value="'+hoy()+'"/></div>'+
+    '<div><label>Hora de medición</label><input type="time" id="r-h" value="'+horaActual()+'"/></div></div>'+
+    '<label>Observaciones</label><textarea id="r-obs" placeholder="Método de medición, condiciones..."></textarea></div>'+
+    '<button class="bsave bsave-full" onclick="guardarReal()">Guardar medición real</button>';
+  openM();
+}
+
+function guardarReal(){
+  var prod=gv('r-prod'),val=parseFloat(gv('r-val'));
+  if(!prod||isNaN(val)){toast('Completá los campos','err');return;}
+  var r={id:'REAL-'+ts6(),producto:prod,valor:val,fecha:gv('r-f'),hora:gv('r-h')||'',observaciones:gv('r-obs'),cargadoPor:window._user.nombre,tsn:Date.now()};
+  realesHist.unshift(r);sv('bio_reales',realesHist);
+  // Actualizar stock inicial local para este depósito
+  if(prod==='silo1') stockIni.s1=val;
+  else if(prod==='silo2') stockIni.s2=val;
+  else if(prod==='silo3') stockIni.s3=val;
+  else if(prod==='silo4') stockIni.s4=val;
+  else if(prod==='aceite') stockIni.ace=val;
+  else if(prod==='tolva1') stockIni.t1=val;
+  else if(prod==='tolva2') stockIni.t2=val;
+  sv('bio_stk_ini',stockIni);
+  toast('✅ Stock real guardado — modelo actualizado','ok');
+  closeM();calcStock();renderRealesHist();
+}
+
+function renderRealesHist(){
+  var c=document.getElementById('list-reales');if(!c)return;
+  if(!realesHist.length){c.innerHTML='<div style="color:var(--txm);font-size:.76rem;padding:.45rem">Sin cargas reales registradas</div>';return;}
+  var canDel=window._user&&window._user.role==='gerente';
+  c.innerHTML='<div class="twrap"><table><thead><tr><th>Fecha</th><th>Hora</th><th>Depósito</th><th>Real (t)</th><th>Cargó</th>'+(canDel?'<th></th>':'')+'</tr></thead><tbody>'+
+    realesHist.slice(0,20).map(function(r){
+      return '<tr><td class="tm">'+r.fecha+'</td><td class="tm">'+(r.hora||'—')+'</td><td class="tc">'+esc(r.producto)+'</td>'+
+        '<td class="tm" style="color:var(--gold);font-weight:700">'+r.valor.toFixed(2)+'</td>'+
+        '<td class="tm">'+esc(r.cargadoPor||'')+'</td>'+
+        (canDel?'<td><button onclick="eliminarRegistro(\'real\',\''+r.id+'\')" style="background:none;border:none;color:var(--txl);cursor:pointer;font-size:.8rem">✕</button></td>':'')+
+        '</tr>';
+    }).join('')+'</tbody></table></div>';
+}
+
+// ═══ SALIDAS ═══
+function abrirSalidaAce(){
+  document.getElementById('m-ttl').textContent='Salida de Aceite de Soja';
+  document.getElementById('m-body').innerHTML=
+    '<div class="sec"><div class="sttl">Datos del despacho</div>'+
+    '<label>Fecha</label><input type="date" id="sa-f" value="'+hoy()+'"/>'+
+    '<label>Destinatario / Cliente</label>'+
+    (clientes.length?'<select id="sa-dest"><option value="">— Seleccioná —</option>'+clientes.map(function(c){return '<option>'+esc(c)+'</option>';}).join('')+'</select>':
+    '<input id="sa-dest" placeholder="Nombre del comprador"/>')+
+    '<label>Número de remito</label><input id="sa-rem" placeholder="R-0001"/></div>'+
+    '<div class="sec"><div class="sttl">Pesaje — Tara / Bruto / Neto</div>'+
+    '<div class="fr"><div><label>Tara (kg)</label><input type="number" id="sa-t" placeholder="0" oninput="calcNetoSal(\'sa\')"/></div>'+
+    '<div><label>Bruto (kg)</label><input type="number" id="sa-b" placeholder="0" oninput="calcNetoSal(\'sa\')"/></div></div>'+
+    '<div class="fr" style="margin-top:.28rem"><div><label>Neto (kg)</label><input type="number" id="sa-n" readonly style="color:var(--grn);font-family:var(--fmo);font-weight:700"/></div>'+
+    '<div><label>Litros (÷0.91=kg)</label><input type="number" step="0.1" id="sa-lit" placeholder="0" oninput="calcLitAce()"/></div></div></div>'+
+    '<label>Observaciones</label><textarea id="sa-obs" placeholder="..."></textarea>'+
+    '<button class="bsave bsave-full" onclick="guardarSalida(\'aceite\')">Registrar salida aceite</button>';
+  openM();
+}
+
+function abrirSalidaExp(){
+  document.getElementById('m-ttl').textContent='Salida de Expeller de Soja';
+  document.getElementById('m-body').innerHTML=
+    '<div class="sec"><div class="sttl">Datos del despacho</div>'+
+    '<label>Fecha</label><input type="date" id="se-f" value="'+hoy()+'"/>'+
+    '<label>Cliente</label>'+
+    (clientes.length?'<select id="se-dest"><option value="">— Seleccioná —</option>'+clientes.map(function(c){return '<option>'+esc(c)+'</option>';}).join('')+'</select>':
+    '<input id="se-dest" placeholder="Nombre del cliente"/>')+
+    '<label>Transportista</label><select id="se-trans"><option value="">— Seleccioná —</option>'+transportistas.map(function(t){return '<option>'+esc(t)+'</option>';}).join('')+'<option>Propio</option></select>'+
+    '<label>Número de remito</label><input id="se-rem" placeholder="R-0001"/>'+
+    '<label>Tolva de despacho</label><select id="se-tolva"><option value="Tolva 1">Tolva 1</option><option value="Tolva 2">Tolva 2</option></select></div>'+
+    '<div class="sec"><div class="sttl">Pesaje — Tara / Bruto / Neto</div>'+
+    '<div class="fr"><div><label>Tara (kg)</label><input type="number" id="se-t" placeholder="0" oninput="calcNetoSal(\'se\')"/></div>'+
+    '<div><label>Bruto (kg)</label><input type="number" id="se-b" placeholder="0" oninput="calcNetoSal(\'se\')"/></div></div>'+
+    '<div class="fr" style="margin-top:.28rem"><div><label>Neto (kg)</label><input type="number" id="se-n" readonly style="color:var(--grn);font-family:var(--fmo);font-weight:700"/></div>'+
+    '<div><label>Presentación</label><select id="se-pres"><option>A granel</option><option>Big bag</option><option>Bolsa 50 kg</option></select></div></div></div>'+
+    '<div class="togr"><span class="togl">Es canje de soja</span><label class="tog"><input type="checkbox" id="se-canje"><span class="togsl"></span></label></div>'+
+    '<label>Observaciones</label><textarea id="se-obs" placeholder="..."></textarea>'+
+    '<button class="bsave bsave-full" onclick="guardarSalida(\'expeller\')">Registrar salida expeller</button>';
+  openM();
+}
+
+function calcNetoSal(p){
+  var t=parseFloat(gv(p+'-t'))||0,b=parseFloat(gv(p+'-b'))||0;
+  var e=document.getElementById(p+'-n');if(e)e.value=b-t>0?(b-t).toFixed(0):'';
+}
+function calcLitAce(){var l=parseFloat(gv('sa-lit'))||0;var e=document.getElementById('sa-n');if(e&&!gv('sa-b'))e.value=l>0?(l*0.91).toFixed(1):'';}
+
+function guardarSalida(tipo){
+  var p=tipo==='aceite'?'sa':'se';
+  var fecha=gv(p+'-f'),dest=gv(p+'-dest'),neto=parseFloat(gv(p+'-n'))||0,rem=gv(p+'-rem');
+  if(!fecha||!dest||!neto||!rem){toast('Completá todos los campos','err');return;}
+  var obj={id:'SAL-'+ts6(),numero:'SAL-'+ts6(),tipo,fecha,destinatario:dest,remito:rem,
+    tara:parseFloat(gv(p+'-t'))||0,bruto:parseFloat(gv(p+'-b'))||0,kg:neto,
+    observaciones:gv(p+'-obs'),cargadoPor:window._user.nombre,tsn:Date.now()};
+  if(tipo==='aceite'){
+    obj.hora=gv('sa-hora');
+  }else{
+    obj.hora=gv('se-hora');
+    obj.presentacion=gv('se-pres');
+    obj.canje=document.getElementById('se-canje').checked;
+    obj.transportista=gv('se-trans');
+    obj.tolva=gv('se-tolva');
+    var dosTolvas=document.getElementById('se-dos-tolvas')&&document.getElementById('se-dos-tolvas').checked;
+    if(dosTolvas){
+      obj.tolvaSecundaria=gv('se-tolva')==='Tolva 1'?'Tolva 2':'Tolva 1';
+      obj.kgTolvaSecundaria=parseFloat(gv('se-kg-seg'))||0;
+    }
+  }
+  salidas.unshift(obj);sv('bio_sal',salidas);
+  toast('✅ Salida registrada — '+(neto/1000).toFixed(3)+' t de '+tipo,'ok');
+  closeM();renderSalidas();calcStock();
+}
+
+function renderSalidas(){
+  var c=document.getElementById('list-salidas');if(!c)return;
+  var canDel=window._user&&window._user.role==='gerente';
+  var et=salidas.filter(function(x){return x.tipo==='expeller';}).reduce(function(s,x){return s+(x.kg||0);},0);
+  var at=salidas.filter(function(x){return x.tipo==='aceite';}).reduce(function(s,x){return s+(x.kg||0);},0);
+  var imp=salidas.reduce(function(s,x){return s+(x.importe||0);},0);
+  setText('s-exp-t',(et/1000).toFixed(1)+' t');
+  setText('s-ace-t',(at/1000).toFixed(1)+' t');
+  setText('s-imp-t',imp>0?'$'+fmtM(imp):'$0');
+  if(!salidas.length){c.innerHTML='<div style="color:var(--txm);font-size:.76rem;text-align:center;padding:2rem">Sin salidas registradas</div>';return;}
+  c.innerHTML=salidas.slice(0,40).map(function(s){
+    var col=s.tipo==='aceite'?'var(--blue)':'var(--grn)';
+    return '<div class="card">'+
+      '<div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:'+col+'"></div>'+
+      (canDel?'<button onclick="eliminarRegistro(\'bio_sal\',\''+s.id+'\',salidas,renderSalidas)" style="position:absolute;top:.45rem;right:.45rem;background:none;border:none;color:var(--txl);cursor:pointer;font-size:.85rem" title="Eliminar (solo Gerente)">✕</button>':'')+
+      '<div style="padding-left:.48rem;padding-right:'+(canDel?'1.6rem':'0')+'">'+
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start">'+
+        '<div><div class="cttl">'+(s.tipo==='aceite'?'🛢':'📦')+' '+esc(s.destinatario)+'</div>'+
+        '<div class="csub">'+esc(s.numero||s.remito||'')+' · '+s.fecha+(s.hora?' '+s.hora:'')+'</div></div>'+
+        '<div style="text-align:right"><div style="font-family:var(--fc);font-size:.92rem;font-weight:700;color:'+col+'">'+(s.kg/1000).toFixed(2)+' t</div></div>'+
+      '</div>'+
+      '<div class="cmeta">'+
+        '<span class="cm">'+s.tipo.toUpperCase()+(s.canje?' · CANJE':'')+'</span>'+
+        (s.tara?'<span class="cm">T:'+s.tara.toLocaleString()+' B:'+s.bruto.toLocaleString()+'</span>':'')+
+        (s.tolva?'<span class="cm" style="color:var(--gold)">'+esc(s.tolva)+'</span>':'')+
+        (s.tolvaSecundaria?'<span class="cm" style="color:var(--orange)">+'+esc(s.tolvaSecundaria)+' '+((s.kgTolvaSecundaria||0)/1000).toFixed(2)+'t</span>':'')+
+      '</div></div></div>';
+  }).join('');
+}
+
+// ═══ AUTORIZACIONES ═══
+function renderAuth(){
+  var c=document.getElementById('list-auth');if(!c)return;
+  var pend=autorizaciones.filter(function(a){return a.estado==='pendiente';});
+  if(!pend.length){c.innerHTML='<div style="color:var(--txm);font-size:.76rem;text-align:center;padding:2rem">✅ Sin autorizaciones pendientes</div>';return;}
+  var u=window._user,canAuth=u.role==='gerente'||u.role==='admin';
+  c.innerHTML=pend.map(function(a){
+    return '<div class="alrt urg">'+
+      '<div style="font-size:1.5rem;flex-shrink:0">🔐</div>'+
+      '<div class="abody">'+
+        '<div class="attl">'+(a.tipo==='diferencia_kg'?'Diferencia de kg':'Descuento de calidad')+'</div>'+
+        '<div class="asub">'+esc(a.descripcion||'')+'</div>'+
+        '<div class="asub">Ingreso: '+esc(a.ingresoId||'')+' · '+esc(a.proveedor||'')+'</div>'+
+        '<div class="asub" style="color:var(--txl)">Solicitado por: '+esc(a.cargadoPor||'')+'</div>'+
+      '</div>'+
+      (canAuth?
+        '<div style="display:flex;flex-direction:column;gap:.28rem;flex-shrink:0">'+
+        '<button class="bsm bsg" onclick="resolverAuth(\''+a.id+'\',\'aprobado\')">✓ Aprobar</button>'+
+        '<button class="bsm bsr" onclick="resolverAuth(\''+a.id+'\',\'rechazado\')">✗ Rechazar</button>'+
+        '</div>':
+        '<span class="badge bredp">Pend. gerente</span>')+
+    '</div>';
+  }).join('');
+}
+
+function resolverAuth(id,decision){
+  var u=window._user;
+  if(u.role!=='gerente'&&u.role!=='admin'){toast('Sin permiso — solo el Gerente puede autorizar','err');return;}
+  var allA=ls('bio_auth',[]);
+  var idx=allA.findIndex(function(a){return a.id===id;});
+  if(idx!==-1){allA[idx].estado=decision;allA[idx].resueltoPor=u.nombre;allA[idx].fechaRes=hoy();}
+  sv('bio_auth',allA);
+  // Si aprobado, actualizar ingreso
+  if(decision==='aprobado'){
+    var auth=allA[idx];
+    if(auth){
+      var ii=ingresos.findIndex(function(x){return x.numero===auth.ingresoId||x.id===auth.ingresoId;});
+      if(ii!==-1){ingresos[ii].estado='autorizado';sv('bio_ing',ingresos);}
+    }
+  }
+  autorizaciones=autorizaciones.filter(function(a){return a.id!==id;});
+  toast(decision==='aprobado'?'✅ Ingreso aprobado':'❌ Ingreso rechazado',decision==='aprobado'?'ok':'err');
+  renderAuth();renderIngresos();updAuthBadge();calcStock();
+}
+
+function updAuthBadge(){
+  var n=autorizaciones.filter(function(a){return a.estado==='pendiente';}).length;
+  var b=document.getElementById('auth-badge');if(b){b.textContent=n;b.style.display=n>0?'inline':'none';}
+  setText('d-auth',n);
+}
+
+// ═══ KPIs ═══
+function updKpis(){
+  if(!analisis.length) return;
+  var avg=function(arr){return arr.length?arr.reduce(function(s,x){return s+x;},0)/arr.length:0;};
+  var ext=analisis.filter(function(a){return a.extraccion>0;}).map(function(a){return a.extraccion;});
+  var prot=analisis.filter(function(a){return a.final&&a.final.proteina>0;}).map(function(a){return a.final.proteina;});
+  var ace=analisis.filter(function(a){return a.final&&a.final.aceite>0;}).map(function(a){return a.final.aceite;});
+  var pp=analisis.filter(function(a){return a.perdProceso>0;}).map(function(a){return a.perdProceso;});
+  var rec=analisis.filter(function(a){return a.recuperacion>0;}).map(function(a){return a.recuperacion;});
+  var tl1=analisis.filter(function(a){return a.linea1&&a.linea1.temperatura>0;}).map(function(a){return a.linea1.temperatura;});
+  var tl2=analisis.filter(function(a){return a.linea2&&a.linea2.temperatura>0;}).map(function(a){return a.linea2.temperatura;});
+  var ep=avg(ext);
+  setText('kpi-ext-big',ep.toFixed(2)+'%');
+  setText('d-ext',ep.toFixed(2)+'%');
+  setText('kpi-pp',avg(pp).toFixed(2)+'%');
+  setText('kpi-recup',avg(rec).toFixed(2)+'%');
+  setText('kpi-prot',avg(prot).toFixed(1)+'%');
+  setText('kpi-aceexp',avg(ace).toFixed(2)+'%');
+  setText('kpi-tl1',avg(tl1).toFixed(0)+'°C');
+  setText('kpi-tl2',avg(tl2).toFixed(0)+'°C');
+  // Mes actual
+  var hoyD=new Date(),iniM=new Date(hoyD.getFullYear(),hoyD.getMonth(),1);
+  var ingM=ingresos.filter(function(i){return new Date(i.fecha)>=iniM&&i.estado==='autorizado';}).reduce(function(s,i){return s+(i.kgBalanza||0);},0);
+  setText('d-ing',(ingM/1000).toFixed(1)+' t');
+  updAuthBadge();
+  renderKpiProv();renderKpiEnc();renderChartExt();
+}
+
+function renderKpiProv(){
+  var c=document.getElementById('kpi-prov');if(!c)return;
+  var pp={};
+  ingresos.filter(function(i){return i.estado==='autorizado';}).forEach(function(i){
+    var p=i.proveedor||'—';if(!pp[p])pp[p]={kg:0,h:0,a:0,pr:0,n:0};
+    pp[p].kg+=(i.kgBalanza||0);pp[p].h+=(i.humedad||0);pp[p].a+=(i.aceite||0);pp[p].pr+=(i.proteina||0);pp[p].n++;
+  });
+  var rows=Object.values(pp);if(!rows.length){c.innerHTML='<div style="color:var(--txm);font-size:.76rem;padding:.45rem">Sin datos</div>';return;}
+  rows.forEach(function(r){r.h/=r.n;r.a/=r.n;r.pr/=r.n;});
+  rows.sort(function(a,b){return b.kg-a.kg;});
+  c.innerHTML='<div class="twrap"><table><thead><tr><th>Proveedor</th><th>Total kg</th><th>Hum</th><th>Aceite</th><th>Proteína</th></tr></thead><tbody>'+
+    rows.map(function(r){return '<tr><td class="tc">'+esc(r.prov||r.kg&&'—')+'</td>'+
+      '<td class="tm">'+r.kg.toLocaleString()+'</td>'+
+      '<td class="tm" style="color:var(--orange)">'+r.h.toFixed(1)+'%</td>'+
+      '<td class="tm" style="color:var(--gold)">'+r.a.toFixed(1)+'%</td>'+
+      '<td class="tm" style="color:var(--grn)">'+r.pr.toFixed(1)+'%</td></tr>';
+    }).join('')+'</tbody></table></div>';
+  // fix: usar nombre correcto
+  c.innerHTML='<div class="twrap"><table><thead><tr><th>Proveedor</th><th>Total kg</th><th>Hum prom</th><th>Aceite prom</th><th>Prot prom</th></tr></thead><tbody>'+
+    rows.map(function(r,i){
+      var nm=Object.keys(pp)[Object.values(pp).indexOf(r)];
+      return '<tr><td class="tc">'+esc(nm)+'</td>'+
+        '<td class="tm">'+r.kg.toLocaleString()+'</td>'+
+        '<td class="tm" style="color:var(--orange)">'+r.h.toFixed(1)+'%</td>'+
+        '<td class="tm" style="color:var(--gold)">'+r.a.toFixed(1)+'%</td>'+
+        '<td class="tm" style="color:var(--grn)">'+r.pr.toFixed(1)+'%</td></tr>';
+    }).join('')+'</tbody></table></div>';
+}
+
+function renderKpiEnc(){
+  var c=document.getElementById('kpi-enc');if(!c)return;
+  var pe={};
+  analisis.filter(function(a){return a.extraccion>0&&a.responsable;}).forEach(function(a){
+    var e=a.responsable;if(!pe[e])pe[e]={ext:0,prot:0,n:0};
+    pe[e].ext+=(a.extraccion||0);pe[e].prot+=((a.final?a.final.proteina:0)||0);pe[e].n++;
+  });
+  var rows=Object.entries(pe).map(function(e){return {enc:e[0],ext:e[1].ext/e[1].n,prot:e[1].prot/e[1].n,n:e[1].n};});
+  if(!rows.length){c.innerHTML='<div style="color:var(--txm);font-size:.76rem;padding:.45rem">Sin datos</div>';return;}
+  rows.sort(function(a,b){return b.ext-a.ext;});
+  c.innerHTML='<div class="twrap"><table><thead><tr><th>Encargado</th><th>Análisis</th><th>Extracción prom</th><th>Proteína prom</th></tr></thead><tbody>'+
+    rows.map(function(r,i){return '<tr><td class="tc">'+(i===0?'🥇 ':i===1?'🥈 ':i===2?'🥉 ':'')+esc(r.enc)+'</td>'+
+      '<td class="tm">'+r.n+'</td>'+
+      '<td class="tm" style="color:var(--grn);font-weight:700">'+r.ext.toFixed(2)+'%</td>'+
+      '<td class="tm" style="color:var(--blue)">'+r.prot.toFixed(1)+'%</td></tr>';
+    }).join('')+'</tbody></table></div>';
+}
+
+function renderChartExt(){
+  var c=document.getElementById('chart-ext'),cl=document.getElementById('chart-ext-l');
+  if(!c||!cl)return;
+  var pd={};
+  analisis.forEach(function(a){if(!a.fecha||!a.extraccion)return;if(!pd[a.fecha])pd[a.fecha]={s:0,n:0};pd[a.fecha].s+=a.extraccion;pd[a.fecha].n++;});
+  var dias=Object.keys(pd).sort().slice(-30);
+  if(!dias.length)return;
+  var vals=dias.map(function(d){return pd[d].s/pd[d].n;});
+  var mx=Math.max.apply(null,vals)||1,pm=vals.reduce(function(s,x){return s+x;},0)/vals.length;
+  c.innerHTML=vals.map(function(v,i){
+    var pct=(v/mx)*100,col=v>pm+0.5?'var(--grn)':v<pm-0.5?'var(--red)':'var(--orange)';
+    return '<div class="bcol" style="height:'+pct+'%;background:'+col+'" title="'+dias[i]+': '+v.toFixed(2)+'%"></div>';
+  }).join('');
+  cl.innerHTML=dias.map(function(d,i){
+    return (i%5===0)?'<div style="font-family:var(--fmo);font-size:.54rem;color:var(--txl);white-space:nowrap;overflow:hidden;flex:5">'+d.slice(5)+'</div>':'<div style="flex:1"></div>';
+  }).join('');
+}
+
+// ═══ DASHBOARD ═══
+function renderDash(){
+  var ci=document.getElementById('dash-ing');
+  if(ci){
+    var ui=ingresos.slice(0,5);
+    ci.innerHTML=ui.length?ui.map(function(i){return '<div style="display:flex;justify-content:space-between;padding:.34rem 0;border-bottom:1px solid var(--brd);font-size:.77rem">'+
+      '<span style="color:var(--tx);font-weight:600">'+esc(i.proveedor)+'</span>'+
+      '<span style="font-family:var(--fmo);color:var(--gold)">'+((i.kgBalanza||0)/1000).toFixed(1)+'t · '+i.fecha+
+      (i.estado==='autorizado'?' <span style="color:var(--grn)">✓</span>':' <span style="color:var(--red)">⏳</span>')+
+      (i.silo?' · <span style="color:var(--gold)">'+esc(i.silo)+'</span>':'')+
+      '</span></div>';}).join(''):'<div style="color:var(--txm);font-size:.76rem;padding:.4rem">Sin ingresos aún</div>';
+  }
+  var ca=document.getElementById('dash-anal');
+  if(ca){
+    var ua=analisis.slice(0,4);
+    ca.innerHTML=ua.length?ua.map(function(a){
+      var ext=(a.extraccion||0).toFixed(1),col=parseFloat(ext)>=pctAce*100*0.95?'var(--grn)':parseFloat(ext)>=pctAce*100*0.85?'var(--orange)':'var(--red)';
+      return '<div style="display:flex;justify-content:space-between;padding:.34rem 0;border-bottom:1px solid var(--brd);font-size:.77rem">'+
+        '<span style="color:var(--tx)">'+a.fecha+' · '+esc(a.responsable||'')+'</span>'+
+        '<span style="font-family:var(--fmo)"><span style="color:var(--blue)">'+(a.final?a.final.proteina:0)+'% prot</span> · <span style="color:'+col+'">'+ext+'% ext</span></span></div>';
+    }).join(''):'<div style="color:var(--txm);font-size:.76rem;padding:.4rem">Sin análisis aún</div>';
+  }
+}
+
+// ═══ CONFIG / IMPORT ═══
+function importarBase(inp){
+  if(!inp.files||!inp.files[0])return;
+  var file=inp.files[0],tipo=gv('imp-tipo');
+  _impTipo=tipo;
+  var ext=file.name.split('.').pop().toLowerCase();
+  if(ext==='csv'){
+    var reader=new FileReader();
+    reader.onload=function(e){
+      var lines=e.target.result.split('\n').map(function(l){return l.trim().split(/[,;]/).map(function(c){return c.replace(/^"|"$/g,'').trim();});});
+      var nombres=[];
+      lines.forEach(function(r){if(r[0]&&r[0].length>1&&r[0].toLowerCase()!=='nombre')nombres.push(r[0]);});
+      _impBuf=nombres;mostrarPreview(nombres,tipo);
+    };
+    reader.readAsText(file,'utf-8');
+  }else{
+    var reader2=new FileReader();
+    reader2.onload=function(e){
+      try{
+        var wb=XLSX.read(e.target.result,{type:'binary'});
+        var ws=wb.Sheets[wb.SheetNames[0]];
+        var rows=XLSX.utils.sheet_to_json(ws,{header:1});
+        var nombres=[];
+        rows.forEach(function(r,i){
+          var val=r[0]?String(r[0]).trim():'';
+          if(val&&val.length>1&&i>0) nombres.push(val);
+          else if(val&&val.length>1&&i===0&&val.toLowerCase()!=='nombre'&&val.toLowerCase()!=='proveedor'&&val.toLowerCase()!=='cliente') nombres.push(val);
+        });
+        _impBuf=nombres;mostrarPreview(nombres,tipo);
+      }catch(e2){toast('Error al leer el archivo','err');}
+    };
+    reader2.readAsBinaryString(file);
+  }
+}
+
+function mostrarPreview(nombres,tipo){
+  document.getElementById('imp-preview').style.display='block';
+  document.getElementById('imp-count').textContent='✅ '+nombres.length+' '+tipo+' encontrados';
+  document.getElementById('imp-list').innerHTML=nombres.slice(0,50).map(function(n){return '<div style="padding:.18rem 0;border-bottom:1px solid var(--brd)">'+esc(n)+'</div>';}).join('')+(nombres.length>50?'<div style="color:var(--txl);margin-top:.28rem">... y '+(nombres.length-50)+' más</div>':'');
+}
+
+function confirmarImport(){
+  if(!_impBuf||!_impTipo){toast('Sin datos para importar','err');return;}
+  var tipo=_impTipo;
+  var listas={proveedores,transportistas,clientes};
+  var claves={proveedores:'bio_prov',transportistas:'bio_trans',clientes:'bio_cli'};
+  var lista=listas[tipo]||[];
+  var nuevos=0;
+  _impBuf.forEach(function(n){if(!lista.includes(n)){lista.push(n);nuevos++;}});
+  sv(claves[tipo],lista);
+  if(tipo==='proveedores') proveedores=lista;
+  else if(tipo==='transportistas') transportistas=lista;
+  else clientes=lista;
+  renderConfigLists();
+  document.getElementById('imp-preview').style.display='none';
+  document.getElementById('imp-file').value='';
+  _impBuf=null;
+  toast('✅ '+nuevos+' '+tipo+' importados ('+lista.length+' total)','ok');
+}
+
+function agregarItem(tipo,inputId,listId){
+  var n=document.getElementById(inputId).value.trim();
+  if(!n){toast('Escribí un nombre','err');return;}
+  if(tipo==='proveedores'){
+    if(proveedores.includes(n)){toast('Ya existe','err');return;}
+    proveedores.push(n);sv('bio_prov',proveedores);
+  }else if(tipo==='transportistas'){
+    if(transportistas.includes(n)){toast('Ya existe','err');return;}
+    transportistas.push(n);sv('bio_trans',transportistas);
+  }else if(tipo==='clientes'){
+    if(clientes.includes(n)){toast('Ya existe','err');return;}
+    clientes.push(n);sv('bio_cli',clientes);
+  }
+  document.getElementById(inputId).value='';
+  renderConfigLists();
+  toast('✅ Agregado','ok');
+}
+
+function renderConfigLists(){
+  renderLista('list-proveedores',proveedores,'bio_prov',function(l){proveedores=l;});
+  renderLista('list-transportistas',transportistas,'bio_trans',function(l){transportistas=l;});
+  renderLista('list-clientes',clientes,'bio_cli',function(l){clientes=l;});
+  // Valores cfg en inputs
+  var campos={capS1:'cap-s1',capS2:'cap-s2',capS3:'cap-s3',capS4:'cap-s4',capAce:'cap-ace',capT1:'cap-t1',capT2:'cap-t2',capSec:'cap-sec',umbralDif:'cfg-dif',humMaxProd:'cfg-hum'};
+  Object.entries(campos).forEach(function(e){var el=document.getElementById(e[1]);if(el)el.value=cfg[e[0]];});
+}
+
+function renderLista(id,lista,key,setCb){
+  var c=document.getElementById(id);if(!c)return;
+  if(!lista.length){c.innerHTML='<div style="color:var(--txl);font-size:.73rem;padding:.35rem">Sin registros</div>';return;}
+  c.innerHTML=lista.map(function(n,i){
+    return '<div style="display:flex;justify-content:space-between;padding:.32rem .42rem;border-bottom:1px solid var(--brd);font-size:.76rem">'+
+      '<span style="color:var(--txm)">'+esc(n)+'</span>'+
+      '<button onclick="eliminarItem(\''+key+'\','+i+')" style="background:none;border:none;color:var(--txl);cursor:pointer;font-size:.73rem;padding:0 .2rem">✕</button>'+
+    '</div>';
+  }).join('');
+}
+
+function eliminarItem(key,idx){
+  var u=window._user;
+  if(!u||u.role!=='gerente'){toast('Solo el Gerente puede eliminar registros','err');return;}
+  var claves={bio_prov:'proveedores',bio_trans:'transportistas',bio_cli:'clientes'};
+  var listas={proveedores,transportistas,clientes};
+  var nm=claves[key];var lista=listas[nm];
+  if(!confirm('¿Eliminar "'+lista[idx]+'"?'))return;
+  lista.splice(idx,1);sv(key,lista);
+  renderConfigLists();
+}
+
+function guardarCfg(){
+  cfg.capS1=parseFloat(gv('cap-s1'))||750;
+  cfg.capS2=parseFloat(gv('cap-s2'))||750;
+  cfg.capS3=parseFloat(gv('cap-s3'))||750;
+  cfg.capS4=parseFloat(gv('cap-s4'))||750;
+  cfg.capSilo=Math.max(cfg.capS1,cfg.capS2,cfg.capS3,cfg.capS4); // compatibilidad
+  cfg.capAce=parseFloat(gv('cap-ace'))||300;
+  cfg.capT1=parseFloat(gv('cap-t1'))||250;
+  cfg.capT2=parseFloat(gv('cap-t2'))||250;
+  cfg.capTolva=Math.max(cfg.capT1,cfg.capT2); // compatibilidad
+  cfg.capSec=parseFloat(gv('cap-sec'))||10;
+  cfg.umbralDif=parseFloat(gv('cfg-dif'))||100;
+  cfg.humMaxProd=parseFloat(gv('cfg-hum'))||10;
+  sv('bio_cfg',cfg);
+  toast('✅ Parámetros guardados','ok');
+  calcStock();
+}
+
+// ═══ HELPERS MODALES ═══
+function togSegTolva(){
+  var checked=document.getElementById('se-dos-tolvas')&&document.getElementById('se-dos-tolvas').checked;
+  var box=document.getElementById('se-seg-tolva');
+  if(box)box.style.display=checked?'block':'none';
+}
+
+// ═══ ELIMINAR REGISTROS — SOLO GERENTE ═══
+function eliminarRegistro(tipo,id){
+  if(!window._user||window._user.role!=='gerente'){toast('Solo Gerencia puede eliminar registros','err');return;}
+  var mapa={
+    'ingreso':{arr:ingresos,key:'bio_ing',render:function(){renderIngresos();renderDash();calcStock();}},
+    'bio_ing':{arr:ingresos,key:'bio_ing',render:function(){renderIngresos();renderDash();calcStock();}},
+    'turno':{arr:turnos,key:'bio_tur',render:renderTurnos},
+    'bio_tur':{arr:turnos,key:'bio_tur',render:renderTurnos},
+    'analisis':{arr:analisis,key:'bio_anal',render:function(){renderAnalisis();updKpis();}},
+    'bio_anal':{arr:analisis,key:'bio_anal',render:function(){renderAnalisis();updKpis();}},
+    'salida':{arr:salidas,key:'bio_sal',render:function(){renderSalidas();calcStock();}},
+    'bio_sal':{arr:salidas,key:'bio_sal',render:function(){renderSalidas();calcStock();}},
+    'pasaje':{arr:pasajes,key:'bio_pasajes',render:function(){renderPasajes();calcStock();}},
+    'bio_pasajes':{arr:pasajes,key:'bio_pasajes',render:function(){renderPasajes();calcStock();}},
+    'real':{arr:realesHist,key:'bio_reales',render:function(){renderRealesHist();calcStock();}},
+    'bio_reales':{arr:realesHist,key:'bio_reales',render:function(){renderRealesHist();calcStock();}},
+    'movsilo':{arr:movSilos,key:'bio_mov_silos',render:function(){renderMovSilos();renderSilos();}}
+  };
+  var m=mapa[tipo];
+  if(!m){toast('Tipo desconocido','err');return;}
+  var idx=m.arr.findIndex(function(x){return x.id===id;});
+  if(idx===-1){toast('Registro no encontrado','err');return;}
+  if(!confirm('¿Eliminar este registro? Esta acción no se puede deshacer.')){return;}
+  m.arr.splice(idx,1);
+  sv(m.key,m.arr);
+  m.render();
+  toast('✅ Registro eliminado','ok');
+}
+
+// ═══ UTILS ═══
+function gv(id){var e=document.getElementById(id);return e?e.value.trim():'';}
+function setText(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
+function hoy(){return new Date().toISOString().split('T')[0];}
+function horaActual(){var d=new Date();return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
+function ts6(){return Date.now().toString().slice(-6)+Math.floor(Math.random()*100);}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function fmtM(n){if(n>=1e9)return (n/1e9).toFixed(1)+'B';if(n>=1e6)return (n/1e6).toFixed(1)+'M';if(n>=1e3)return (n/1e3).toFixed(0)+'K';return n.toFixed(0);}
+function toast(msg,t){var el=document.getElementById('toast');el.textContent=msg;el.className='toast'+(t==='err'?' err':t==='warn'?' warn':'');el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(function(){el.classList.remove('show');},3500);}
+</script>
+</body>
+</html>

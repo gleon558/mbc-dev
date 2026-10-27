@@ -1,0 +1,19 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Regla general: solo pueden leer/escribir usuarios autenticados
+    // (incluye la autenticación anónima que agregamos en el código).
+    // Esto bloquea que cualquier bot o script externo pegue directo
+    // contra la API de Firestore sin pasar por la app.
+    //
+    // OJO: esto también cubre las colecciones bio_autorizaciones,
+    // bio_ingresos_mp, bio_turnos (de otra app que comparte esta
+    // misma base de datos). Si esa otra app NO tiene login anónimo
+    // implementado, se va a romper con este cambio — hay que
+    // confirmar antes de publicar esto en producción.
+    match /{document=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
