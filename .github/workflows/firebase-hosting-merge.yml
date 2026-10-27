@@ -18,3 +18,4 @@ jobs:
           firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}"
           projectId: mbc-pedidos-dev
           channelId: live
+          firebaseToolsVersion: "15.34.0" # <-- AÑADE ESTA LÍNEA AQUÍ
